@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>作品を登録する｜CardWirth 共用カタログ</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../config.js"></script>
+<script src="../form.js"></script>
+<script>window.onTurnstile = () => window.dispatchEvent(new Event('cw-turnstile'));</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstile" async defer></script>
+</head>
+<body>
+<main>
+  <p><a href="../">← 共用カタログ トップへ</a></p>
+  <h1>作品を登録する</h1>
+  <p class="lead">配布場所の情報だけを登録します（作品のファイルはアップロードしません）。作者さんご本人のほか、<b>代理での登録が許可されている作品</b>なら、作者さん以外の方も登録できます。</p>
+  <p class="hint">同じ作者さんの作品を何作品か登録するときは、<a href="bulk/">まとめて登録する</a>が便利です。</p>
+
+  <form id="reg" class="card" novalidate>
+    <div id="fields"></div>
+    <fieldset>
+      <legend>登録する人</legend>
+      <div class="choices">
+        <label><input type="radio" name="claim" value="proxy" checked> 作者さん以外（代理登録）</label>
+        <label><input type="radio" name="claim" value="author"> 作者本人</label>
+      </div>
+      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> 代理での登録が許可されている作品です（Readme・作者さんのサイトなどで確かめました）<b class="req">必須</b></label>
+      <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../manage/#verify">サイト認証</a>で本人の登録にできます。</p>
+    </fieldset>
+    <fieldset>
+      <legend>送る前に</legend>
+      <ul class="hint">
+        <li>登録した内容は、<b>だれでも見られる形</b>で公開されます（GitHub に保存され、変更の履歴も残ります）。データは CC0（自由に使える）です</li>
+        <li>配布ページなどに作品名と作者名が書いてあれば、すぐにカタログに載ります。見つからないときは、管理人が確かめてから載せます</li>
+        <li>送ると <b>作品ID</b> と <b>編集キー</b> が出ます。編集キーは、あとで登録内容を変更・削除するときに使います。<b>二度と表示されない</b>ので、必ず控えてください</li>
+      </ul>
+    </fieldset>
+    <div id="ts"></div>
+    <p><button class="btn" type="submit" id="go">登録する</button></p>
+    <p id="msg" class="msg" hidden></p>
+  </form>
+
+  <section id="done" class="card" hidden>
+    <h2>登録しました</h2>
+    <p id="done-state"></p>
+    <dl class="keys">
+      <dt>作品ID</dt><dd><code id="done-id"></code></dd>
+      <dt>編集キー</dt><dd><code id="done-key"></code> <button class="btn small" type="button" id="copy">コピー</button></dd>
+    </dl>
+    <p class="msg warn">⚠ 編集キーは<b>二度と表示されません</b>。メモ帳などに貼って、なくさないように保存してください。内容の変更・削除時に使用します。</p>
+    <p><a href="../manage/">登録内容の変更・解除</a>　／　<a href="./">続けて登録する</a></p>
+  </section>
+</main>
+<script>
+(async () => {
+  const form = CW.$('#reg');
+  CW.$('#fields').innerHTML = CW.fieldsHtml;
+  CW.wire(form);
+  const msg = CW.$('#msg');
+  if (!window.CW_CONFIG.api) CW.msg(msg, '受付の準備中です。もうしばらくお待ちください（登録はまだできません）', 'warn');
+  const widget = await CW.turnstile(CW.$('#ts'));
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const btn = CW.$('#go');
+    btn.disabled = true;
+    CW.msg(msg, '送っています…（配布ページの確認に、少し時間がかかることがあります）');
+    try {
+      const r = await CW.send('/api/register', CW.read(form), widget);
+      CW.$('#done-id').textContent = r.id;
+      CW.$('#done-key').textContent = r.edit_key;
+      CW.$('#done-state').textContent = r.state === 'public'
+        ? `配布ページなどで作品名と作者名が確かめられたので、カタログに載せました（数分で反映されます）。`
+        : `配布ページなどで作品名と作者名が見つからなかったので、管理人が確かめてから載せます（承認待ち）。`;
+      form.hidden = true;
+      CW.$('#done').hidden = false;
+      window.scrollTo(0, 0);
+    } catch (e) {
+      CW.msg(msg, e.message, 'bad');
+    } finally { btn.disabled = false; }
+  });
+  CW.$('#copy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(`作品ID：${CW.$('#done-id').textContent}\n編集キー：${CW.$('#done-key').textContent}`); CW.$('#copy').textContent = 'コピーしました'; } catch { CW.$('#copy').textContent = 'コピーできませんでした'; }
+  });
+})();
+</script>
+</body>
+</html>

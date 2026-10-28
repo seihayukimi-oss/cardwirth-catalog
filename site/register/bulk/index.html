@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>まとめて登録する｜CardWirth 共用カタログ</title>
+<link rel="stylesheet" href="../../style.css">
+<script src="../../config.js"></script>
+<script src="../../form.js"></script>
+<script>window.onTurnstile = () => window.dispatchEvent(new Event('cw-turnstile'));</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstile" async defer></script>
+</head>
+<body>
+<main>
+  <p><a href="../">← 作品を登録する（1作品ずつ）</a></p>
+  <h1>まとめて登録する</h1>
+  <p class="lead">同じ作者さんの作品を、何作品かまとめて登録します。作者名・作者さんのサイトなど、全部に共通のことは1回だけ書けば大丈夫です。送るときは、作品を1つずつ順番に受付へ送ります。</p>
+  <p class="hint">改変版の作品は、<a href="../">1作品ずつの登録</a>からお願いします（もとの作品と、改変してよいと分かるものを書く欄があります）。</p>
+
+  <form id="bulk" class="card" novalidate>
+    <fieldset>
+      <legend>全部の作品に共通</legend>
+      <label class="field">作者名 <b class="req">必須</b><span class="hint">作者名またはサークル名（※代理登録の場合、登録者ではなく原作者名を入力してください）</span><input name="author" required maxlength="200"></label>
+      <label class="field">作者さんのサイト<input name="site" type="url" placeholder="https://"></label>
+      <label class="field">紹介ページ<span class="hint">作者さんの紹介ページ・X・Misskey など。全部の作品に入れます。1行に1つ</span><textarea name="intro" rows="2"></textarea></label>
+      <label class="field">予備の配布URL<span class="hint">作者さんの配布ページなど、全部の作品の予備として入れます。1行に1つ。「名前 | URL」とも書けます</span><textarea name="more_urls" rows="2"></textarea></label>
+      <label class="field">情報元・確認方法 <b class="req">必須</b><span class="hint">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span>
+        <select name="checked" required><option value="">選んでください</option><option value="readme">Readme</option><option value="site">作者公式サイト・配布ページ</option><option value="author">作者本人へ直接確認</option><option value="other">その他</option></select></label>
+      <label class="field">補足<input name="checked_note" maxlength="300" placeholder="例：Readmeの「再配布について」の項目"></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>作品</legend>
+      <ol id="rows" class="bulk-rows"></ol>
+      <p><button class="btn small" type="button" id="add">＋作品を足す</button> <span class="hint">一度に20作品まで</span></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>登録する人</legend>
+      <div class="choices">
+        <label><input type="radio" name="claim" value="proxy" checked> 作者さん以外（代理登録）</label>
+        <label><input type="radio" name="claim" value="author"> 作者本人</label>
+      </div>
+      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> どの作品も、代理での登録が許可されています（Readme・作者さんのサイトなどで確かめました）<b class="req">必須</b></label>
+      <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../../manage/#verify">サイト認証</a>で作品ごとに本人の登録にできます。</p>
+    </fieldset>
+    <fieldset>
+      <legend>送る前に</legend>
+      <ul class="hint">
+        <li>登録した内容は、<b>だれでも見られる形</b>で公開されます（GitHub に保存され、変更の履歴も残ります）。データは CC0（自由に使える）です</li>
+        <li>配布ページなどに作品名と作者名が書いてあれば、すぐにカタログに載ります。見つからないときは、管理人が確かめてから載せます</li>
+        <li>作品ごとに <b>作品ID</b> と <b>編集キー</b> が出ます。最後に一覧で出すので、<b>全部コピーして</b>控えてください。編集キーは<b>二度と表示されません</b></li>
+        <li>「ロボットではありません」の確認は、作品ごとに自動でやり直します。確認の画面が出たときは、押してください</li>
+      </ul>
+    </fieldset>
+    <div id="ts"></div>
+    <p><button class="btn" type="submit" id="go">まとめて登録する</button></p>
+    <p id="msg" class="msg" hidden></p>
+  </form>
+
+  <section id="done" class="card" hidden>
+    <h2>登録した作品</h2>
+    <p class="msg warn">⚠ 編集キーは<b>二度と表示されません</b>。「全部コピー」を押して、メモ帳などに貼って保存してください。内容の変更・削除時に使用します。</p>
+    <p><button class="btn" type="button" id="copy">全部コピー</button></p>
+    <table class="grid">
+      <thead><tr><th>作品名</th><th>作品ID</th><th>編集キー</th><th>状態</th></tr></thead>
+      <tbody id="done-list"></tbody>
+    </table>
+    <p><a href="../../manage/">登録内容の変更・解除</a>　／　<a href="./">続けてまとめて登録する</a></p>
+  </section>
+
+  <template id="row-tpl">
+    <li class="card bulk-row">
+      <div class="row-inline"><b class="grow row-no"></b><button class="btn small ghost row-del" type="button">この作品を外す</button></div>
+      <div class="row2">
+        <label class="field">作品名 <b class="req">必須</b><input data-k="name" required maxlength="200"></label>
+        <label class="field">バージョン<input data-k="version" maxlength="50" placeholder="例：1.10"></label>
+      </div>
+      <div class="row2">
+        <label class="field">種類
+          <select data-k="type"><option value="scenario">シナリオ</option><option value="skin">スキン（CardWirthPy）</option><option value="material">素材（画像・音など）</option></select></label>
+        <label class="field">形式
+          <select data-k="format"><option value="classic">クラシック（1.50）</option><option value="next">Next仕様</option><option value="wsn">Py仕様（WSN）</option></select></label>
+      </div>
+      <div class="row2">
+        <label class="field">配布URL <b class="req">必須</b><input data-k="url" type="url" required placeholder="https://"></label>
+        <label class="field">URLの種類
+          <select data-k="url_kind"><option value="page">配布ページ</option><option value="direct">zipなどへの直接のリンク</option><option value="list">ファイル一覧（アップローダーの一覧ページ）</option></select></label>
+      </div>
+      <div class="field">対象年齢 <b class="req">必須</b>
+        <div class="choices rating">
+          <label><input type="radio" value="all"> 全年齢</label>
+          <label><input type="radio" value="r15"> R15</label>
+          <label><input type="radio" value="r18"> R18（成人向け）</label>
+        </div>
+      </div>
+      <details class="sub">
+        <summary>くわしく（移行先URL・注意ラベル・タグ・紹介文）</summary>
+        <label class="field">移行先URL<span class="hint">配布先を移転・変更した際の新しいURL。入力すると上記の配布URLは自動的に「旧（移転前）」扱いとなります</span><input data-k="moved_url" type="url" placeholder="https://"></label>
+        <div class="field">注意ラベル（あてはまるものすべて）<div class="choices label-choices"></div></div>
+        <label class="field">タグ<span class="hint">「、」で区切る（例：短編、探索、1人用）</span><input data-k="tags" maxlength="400"></label>
+        <label class="field">紹介文<textarea data-k="description" rows="3" maxlength="5000"></textarea></label>
+      </details>
+      <p class="msg" data-row-msg hidden></p>
+    </li>
+  </template>
+</main>
+<script>
+(async () => {
+  const MAX = 20;
+  const form = CW.$('#bulk');
+  const rowsEl = CW.$('#rows');
+  const msg = CW.$('#msg');
+  const isHttp = (u) => /^https?:\/\/\S+$/.test(u);
+  if (!window.CW_CONFIG.api) CW.msg(msg, '受付の準備中です。もうしばらくお待ちください（登録はまだできません）', 'warn');
+
+  // 注意ラベル（最初からのものと、管理人が増やしたもの）
+  let labels = CW.LABELS.map(([id, name]) => ({ id, name }));
+  try {
+    const extra = (await (await fetch('../../index.json', { cache: 'no-cache' })).json()).content_labels || [];
+    for (const l of extra) {
+      if (!/^[a-z0-9][a-z0-9_-]{0,29}$/.test(l?.id || '') || !l.name) continue;
+      const cur = labels.find((x) => x.id === l.id);
+      if (cur) cur.name = l.name; else labels.push({ id: l.id, name: l.name });
+    }
+  } catch { /* 最初からのものだけ */ }
+
+  let seq = 0;
+  const number = () => rowsEl.querySelectorAll('.bulk-row').forEach((li, i) => { li.querySelector('.row-no').textContent = `作品 ${i + 1}`; });
+  function addRow() {
+    if (rowsEl.children.length >= MAX) { CW.msg(msg, `一度に登録できるのは${MAX}作品までです`, 'warn'); return; }
+    const li = CW.$('#row-tpl').content.firstElementChild.cloneNode(true);
+    const n = ++seq;
+    li.querySelectorAll('.rating input').forEach((r) => { r.name = `rating-${n}`; });
+    const box = li.querySelector('.label-choices');
+    for (const l of labels) {
+      const lab = document.createElement('label');
+      lab.append(Object.assign(document.createElement('input'), { type: 'checkbox', value: l.id }), document.createTextNode(` ${l.name}`));
+      box.append(lab);
+    }
+    li.querySelector('.row-del').addEventListener('click', () => { li.remove(); number(); });
+    rowsEl.append(li);
+    number();
+    return li;
+  }
+  for (let i = 0; i < 3; i++) addRow();
+  CW.$('#add').addEventListener('click', () => addRow()?.querySelector('[data-k=name]').focus());
+
+  // 代理登録のときだけ、許可のチェックを出す
+  const updClaim = () => { form.querySelectorAll('.if-proxy').forEach((x) => { x.hidden = form.querySelector('[name=claim]:checked')?.value === 'author'; }); };
+  form.addEventListener('change', updClaim);
+  updClaim();
+
+  const widget = await CW.turnstile(CW.$('#ts'));
+  /** Turnstile の確認が終わるまで待つ（1回送るごとに、やり直しになるため） */
+  async function waitToken(label) {
+    for (let i = 0; i < 240; i++) {
+      if (window.turnstile?.getResponse(widget)) return;
+      if (i === 4) CW.msg(msg, `「ロボットではありません」の確認を待っています（${label}）。確認の画面が出ていたら、押してください`, 'warn');
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    throw new Error('「ロボットではありません」の確認が終わりませんでした。ページを読み込み直して、もう一度お試しください');
+  }
+
+  /** 1作品の値（共通の欄と合わせて、1作品ずつの登録と同じ形にする） */
+  function rowBody(li, common) {
+    const v = (k) => li.querySelector(`[data-k=${k}]`).value.trim();
+    return {
+      ...common,
+      type: v('type'), name: v('name'), version: v('version'), format: v('format'),
+      url: v('url'), url_kind: v('url_kind'), url_label: '', match: '',
+      moved_url: v('moved_url'), moved_kind: 'page', moved_label: '',
+      rating: li.querySelector('.rating input:checked')?.value || '',
+      content: [...li.querySelectorAll('.label-choices input:checked')].map((c) => c.value),
+      tags: v('tags'), description: v('description'),
+      derivative: 'no', derivative_of: '', derivative_basis: '',
+    };
+  }
+  /** 送る前の確かめ（受付と同じことを、先にページで見る） */
+  function rowError(b) {
+    if (!b.name) return '作品名を入れてください';
+    if (!isHttp(b.url)) return '配布URL（https:// から始まるもの）を入れてください';
+    if (b.moved_url && !isHttp(b.moved_url)) return '移行先URLは https:// から始まるものにしてください';
+    if (!b.rating) return '対象年齢（全年齢・R15・R18）を選んでください';
+    return '';
+  }
+
+  const results = [];
+  const stateText = (s) => (s === 'public' ? 'カタログに載せました（数分で反映）' : '承認待ち（管理人が確かめてから載せます）');
+  function showResults() {
+    const tb = CW.$('#done-list');
+    tb.textContent = '';
+    for (const r of results) {
+      const tr = document.createElement('tr');
+      for (const t of [r.name, r.id, r.key, stateText(r.state)]) {
+        const td = document.createElement('td');
+        td.textContent = t;
+        tr.append(td);
+      }
+      tb.append(tr);
+    }
+    CW.$('#done').hidden = !results.length;
+  }
+  CW.$('#copy').addEventListener('click', async () => {
+    const text = results.map((r) => `${r.name}\n作品ID：${r.id}\n編集キー：${r.key}`).join('\n\n');
+    try { await navigator.clipboard.writeText(text); CW.$('#copy').textContent = 'コピーしました'; } catch { CW.$('#copy').textContent = 'コピーできませんでした'; }
+  });
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const fd = new FormData(form);
+    const common = {
+      author: String(fd.get('author') || '').trim(), site: String(fd.get('site') || '').trim(), intro: String(fd.get('intro') || ''),
+      more_urls: String(fd.get('more_urls') || ''), checked: String(fd.get('checked') || ''), checked_note: String(fd.get('checked_note') || ''),
+      claim: String(fd.get('claim') || 'proxy'), proxy_ok: !!form.querySelector('[name=proxy_ok]')?.checked,
+    };
+    const fail = (t) => { CW.msg(msg, t, 'bad'); };
+    if (!common.author) return fail('作者名を入れてください');
+    if (common.site && !isHttp(common.site)) return fail('作者さんのサイトは https:// から始まるものにしてください');
+    if (!common.checked) return fail('「情報元・確認方法」を選んでください');
+    if (common.claim !== 'author' && !common.proxy_ok) return fail('代理で登録するときは、「どの作品も、代理での登録が許可されています」にチェックを入れてください');
+    const rows = [...rowsEl.querySelectorAll('.bulk-row')];
+    if (!rows.length) return fail('作品を1つ以上入れてください');
+    let bad = 0;
+    for (const li of rows) {
+      const e = rowError(rowBody(li, common));
+      CW.msg(li.querySelector('[data-row-msg]'), e, e ? 'bad' : '');
+      if (e) bad++;
+    }
+    if (bad) return fail(`入力が足りない作品が ${bad}件 あります（作品の欄の赤い字を見てください）`);
+    if (!confirm(`${rows.length}作品を、1つずつ順番に登録します。よろしいですか？`)) return;
+
+    const btn = CW.$('#go');
+    btn.disabled = true;
+    let ok = 0;
+    try {
+      for (const [i, li] of rows.entries()) {
+        const body = rowBody(li, common);
+        const rmsg = li.querySelector('[data-row-msg]');
+        try {
+          await waitToken(`${i + 1} / ${rows.length}件目`);
+          CW.msg(msg, `送っています… ${i + 1} / ${rows.length}件目「${body.name}」（配布ページの確認に、少し時間がかかることがあります）`);
+          CW.msg(rmsg, '送っています…');
+          const r = await CW.send('/api/register', body, widget);
+          results.push({ name: body.name, id: r.id, key: r.edit_key, state: r.state });
+          li.remove();
+          ok++;
+          showResults();
+        } catch (e) {
+          CW.msg(rmsg, e.message, 'bad');
+        }
+      }
+    } finally {
+      btn.disabled = false;
+      number();
+    }
+    const left = rowsEl.querySelectorAll('.bulk-row').length;
+    CW.msg(msg, left
+      ? `${ok}作品を登録しました。登録できなかった ${left}作品 は、上の欄に残っています（赤い字が理由です）。直して、もう一度「まとめて登録する」を押してください`
+      : `${ok}作品を登録しました。下の一覧の「全部コピー」で、作品IDと編集キーを控えてください`, left ? 'warn' : 'ok');
+    if (!left) { form.hidden = true; window.scrollTo(0, 0); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://cardwirth-catalog.seiha-yukimi-ilst.workers.dev; base-uri 'none'; form-action 'none'">
+<title>管理ページ｜CardWirth 共用カタログ</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../config.js"></script>
+<script src="admin.js" defer></script>
+</head>
+<body>
+<main class="wide">
+  <p><a href="../">← 共用カタログ トップへ</a></p>
+  <h1>管理ページ</h1>
+
+  <!-- 入る -->
+  <section id="login">
+    <p class="lead">管理人・副管理人のキーで入ります。</p>
+    <div class="card">
+      <form id="login-form">
+        <label class="field">管理人キー<input id="login-key" type="password" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX-…"></label>
+        <label class="check"><input id="login-remember" type="checkbox" checked> このタブを閉じるまで覚える</label>
+        <p><button class="btn" type="submit">入る</button></p>
+        <p id="login-msg" class="msg" hidden></p>
+      </form>
+    </div>
+    <p><button class="link" type="button" id="setup-open">はじめての設定（最初の管理人キーを作る）</button></p>
+
+    <div class="card" id="setup" hidden>
+      <h2 class="flat">はじめての設定</h2>
+      <p>管理人（いちばん上の人）のキーを作ります。キーはこのブラウザの中だけで作られ、どこにも送られません。</p>
+      <p><button class="btn" type="button" id="setup-make">キーを作る</button></p>
+      <div id="setup-out" hidden>
+        <dl class="keys">
+          <dt>管理人キー</dt>
+          <dd><span class="copyrow"><span class="url" id="setup-key"></span><button class="btn small" type="button" data-copy="#setup-key">コピー</button></span></dd>
+          <dt>指紋</dt>
+          <dd><span class="copyrow"><span class="url" id="setup-hash"></span><button class="btn small" type="button" data-copy="#setup-hash">コピー</button></span></dd>
+        </dl>
+        <ol>
+          <li><b>管理人キー</b>を、ほかの人に見られない場所（パスワード管理ソフトなど）に控えてください。<b>チャットやリポジトリには貼らないでください。</b>このページを閉じると、二度と表示されません。</li>
+          <li>Cloudflare の画面で、Workers →「cardwirth-catalog」→ Settings →「Runtime variables and secrets」→「Add variable」を開きます。</li>
+          <li>Type は <b>Secret</b>、名前は <code>ADMIN_OWNER_HASH</code>、値に<b>指紋</b>（上の2つ目）を入れて、保存（Deploy）します。</li>
+          <li>30秒ほど待ってから、上の欄に<b>管理人キー</b>を入れて「入る」を押します。</li>
+        </ol>
+        <p class="muted">キーをなくしたときや、作り直したいときも、ここで新しいキーを作って ADMIN_OWNER_HASH を入れ替えれば、前のキーは使えなくなります。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 管理 -->
+  <section id="app" hidden>
+    <div class="topbar">
+      <span id="who"></span>
+      <button class="btn small ghost" type="button" id="logout">出る</button>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="entries" aria-selected="true">作品</button>
+      <button type="button" role="tab" data-tab="labels">ラベル</button>
+      <button type="button" role="tab" data-tab="block">ブロック</button>
+      <button type="button" role="tab" data-tab="me">自分の設定</button>
+      <button type="button" role="tab" data-tab="admins" data-owner hidden>副管理人</button>
+      <button type="button" role="tab" data-tab="log">記録</button>
+    </nav>
+    <p id="app-msg" class="msg" hidden></p>
+
+    <!-- 作品 -->
+    <div class="pane" id="pane-entries">
+      <div class="toolbar">
+        <div class="filters" id="filters"></div>
+        <div class="search"><input id="q" type="search" placeholder="作品名・作者名・ID・URLで探す"><button class="btn small ghost" type="button" id="reload">読み込み直す</button></div>
+      </div>
+      <p class="muted" id="entries-note">公開・非公開などの変更は、数分でカタログ（index.json）に反映されます。</p>
+      <!-- 通報を片付けたときの知らせ。作品の一覧を作り直しても消さず、ページを読み込み直すまで残す -->
+      <div id="entries-done"></div>
+      <div id="entries"></div>
+    </div>
+
+    <!-- ラベルの種類 -->
+    <div class="pane" id="pane-labels" hidden>
+      <div class="card">
+        <p>作品に付ける<b>注意ラベル</b>の種類です。増やしたラベルは、登録フォームと CWカタログ（アプリを更新しなくても）で使えるようになります。</p>
+        <ul class="muted small-list">
+          <li>ID は英小文字・数字・<code>_</code>・<code>-</code>（30文字まで）。一度作品に付けたら、ID は変えないでください（名前はいつでも変えられます）</li>
+          <li>「最初から」のラベルは消せません（名前と説明だけ変えられます）</li>
+        </ul>
+        <table class="grid" id="labels-table">
+          <thead><tr><th>ID</th><th>名前</th><th>説明（任意）</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p><button class="btn small ghost" type="button" id="label-add">＋ ラベルを足す</button></p>
+        <p><button class="btn" type="button" id="labels-save">ラベルの種類を保存</button></p>
+        <p id="labels-msg" class="msg" hidden></p>
+      </div>
+    </div>
+
+    <!-- ブロックリスト -->
+    <div class="pane" id="pane-block" hidden>
+      <div class="card">
+        <p>ここに当たる作品は、登録を受け付けず、カタログにも出しません（すでにある作品も、次の作り直しで外れます）。1行に1つ。</p>
+        <label class="field">URL<span class="hint">そのURLだけ（https:// から）</span><textarea id="block-urls" rows="4" spellcheck="false"></textarea></label>
+        <label class="field">サイト（ホスト名）<span class="hint">例：bad.example（その下の sub.bad.example も当たります）</span><textarea id="block-hosts" rows="4" spellcheck="false"></textarea></label>
+        <label class="field">作者名<span class="hint">全角半角・空白の違いは無視して比べます</span><textarea id="block-authors" rows="4"></textarea></label>
+        <p><button class="btn" type="button" id="block-save">ブロックリストを保存</button></p>
+        <p id="block-msg" class="msg" hidden></p>
+      </div>
+    </div>
+
+    <!-- 自分の設定 -->
+    <div class="pane" id="pane-me" hidden>
+      <div class="card">
+        <label class="field">名前<span class="hint">記録と Discord の知らせに出ます（本名でなくてかまいません）</span><input id="me-name" maxlength="30"></label>
+        <p><button class="btn" type="button" id="me-name-save">名前を保存</button></p>
+        <p id="me-name-msg" class="msg" hidden></p>
+      </div>
+      <h2>Discord の知らせ</h2>
+      <div class="card">
+        <p>今の送り先：<span id="me-hook" class="url"></span></p>
+        <label class="field">Webhook の URL<span class="hint">Discord のサーバー設定 →「連携サービス」→「ウェブフック」→「新しいウェブフック」→「ウェブフックURLをコピー」で作れます。この欄にだけ入れて、チャットなどには貼らないでください</span><input id="me-hook-new" type="password" autocomplete="off" spellcheck="false" placeholder="https://discord.com/api/webhooks/…"></label>
+        <div class="field">知らせる出来事<div class="choices col" id="me-events"></div></div>
+        <p><button class="btn" type="button" id="me-hook-save">保存</button> <button class="btn ghost" type="button" id="me-hook-test">ためしに送る</button> <button class="btn ghost" type="button" id="me-hook-clear">送り先を外す</button></p>
+        <p id="me-hook-msg" class="msg" hidden></p>
+      </div>
+      <div id="sec-box" hidden>
+        <h2>安全の報告の知らせ（管理人だけ）</h2>
+        <div class="card">
+          <p>GitHub の「Private vulnerability reporting」で安全の報告が届いたら、上の Discord の送り先に「安全の報告が届きました。GitHubで確認してください」とだけ知らせます（中身は GitHub の中だけ）。</p>
+          <p>今の状態：<b id="sec-state"></b></p>
+          <p><button class="btn ghost" type="button" id="sec-make">合言葉を作る</button></p>
+          <div id="sec-out" hidden>
+            <p><span class="copyrow"><span class="url" id="sec-secret"></span><button class="btn small" type="button" data-copy="#sec-secret">コピー</button></span></p>
+            <ol>
+              <li>Cloudflare の Worker「cardwirth-catalog」→ Settings →「Runtime variables and secrets」→「Add variable」で、Type は <b>Secret</b>、名前は <code>GH_WEBHOOK_SECRET</code>、値に上の合言葉を入れて保存します。</li>
+              <li>GitHub のリポジトリ（cw-catalog-tool）→ Settings → Webhooks →「Add webhook」で、Payload URL に<br><span class="copyrow"><span class="url" id="sec-url">https://cardwirth-catalog.seiha-yukimi-ilst.workers.dev/api/github/webhook</span><button class="btn small" type="button" data-copy="#sec-url">コピー</button></span><br>Content type は <code>application/json</code>、Secret に<b>同じ合言葉</b>を入れます。</li>
+              <li>「Let me select individual events」を選び、<b>Repository advisories</b> だけにチェックを入れて（Pushes は外す）「Add webhook」を押します。</li>
+            </ol>
+            <p class="muted">合言葉はチャットやリポジトリには貼らないでください。このページを閉じると消えます。</p>
+          </div>
+        </div>
+      </div>
+      <div id="me-rekey-box" hidden>
+        <h2>自分のキー</h2>
+        <div class="card">
+          <p>キーを人に見られたかもしれないときは、作り直してください。前のキーはすぐに使えなくなります。</p>
+          <p><button class="btn ghost" type="button" id="me-rekey">自分のキーを作り直す</button></p>
+          <p id="me-rekey-msg" class="msg" hidden></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 副管理人（管理人だけ） -->
+    <div class="pane" id="pane-admins" hidden>
+      <div class="card">
+        <p>副管理人は、副管理人の追加・外すこと以外は、管理人と同じことができます。キーは追加したときに一度だけ出ます。本人に、ほかの人に見られない方法で渡してください。</p>
+        <div id="admins-list"></div>
+        <div class="row-inline">
+          <label class="field grow">新しい副管理人の名前<input id="admin-name" maxlength="30"></label>
+          <button class="btn" type="button" id="admin-add">追加する</button>
+        </div>
+        <p id="admins-msg" class="msg" hidden></p>
+      </div>
+    </div>
+
+    <!-- 記録 -->
+    <div class="pane" id="pane-log" hidden>
+      <p class="muted">管理ページでの操作の記録です（新しい順・400日で消えます）。</p>
+      <div id="log"></div>
+      <p><button class="btn small ghost" type="button" id="log-more" hidden>もっと見る</button></p>
+    </div>
+  </section>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+# 受付（Cloudflare Workers）を Cloudflare に置く。
+# GitHub の Secrets に CLOUDFLARE_API_TOKEN と CLOUDFLARE_ACCOUNT_ID が要る（無ければ何もしない）。
+# 受付の秘密の値（Turnstile・GitHub App の鍵）は、Cloudflare の画面で登録する（ここでは扱わない）。
+name: 受付を Cloudflare に置く
+
+on:
+  push:
+    branches: [main]
+    paths: ["worker/**", "scripts/build.mjs", "package.json", "package-lock.json", ".github/workflows/worker.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+      - name: Cloudflare に置く
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN・CLOUDFLARE_ACCOUNT_ID が登録されていないので、置きませんでした"
+            exit 0
+          fi
+          set -o pipefail
+          npx wrangler deploy --config worker/wrangler.toml 2>&1 | tee deploy.log
+          url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1 || true)
+          if [ -n "$url" ]; then echo "::notice title=受付のURL::$url"; else echo "::warning title=受付のURL::workers.dev のURLが見つかりませんでした（サブドメインが未設定かもしれません）"; fi

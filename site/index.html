@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CardWirth 共用カタログ</title>
+<meta name="description" content="CardWirth のシナリオ・素材・スキンの配布場所をまとめた、だれでも使える共用カタログです。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>CardWirth 共用カタログ</h1>
+  <p class="lead">CardWirth（1.50・Next・Py）のシナリオ・素材・スキンの<b>配布場所</b>をまとめたカタログです。<br>作品ファイル自体のホスティング（配布）は行っておりません（各作者様の配布ページへの案内・リンクのみとなります）。</p>
+
+  <h2>使い方（CWカタログ）</h2>
+  <div class="card">
+    <ol>
+      <li><a href="https://github.com/seihayukimi-oss/cw-catalog-tool">CWカタログ</a>（アプリ版・HTML版）を開く</li>
+      <li>「カタログ」→「＋ カタログを追加」→「共用カタログをURLで追加」</li>
+      <li>以下のURLを入力：<br><span class="copyrow"><span class="url" id="cat-url">https://seihayukimi-oss.github.io/cardwirth-catalog/index.json</span><button class="btn small" type="button" data-copy="#cat-url">コピー</button></span></li>
+    </ol>
+    <p class="muted">R18（成人向け）の作品は、CWカタログの設定でONにした方にだけ表示されます。</p>
+  </div>
+
+  <h2>作品を登録する</h2>
+  <div class="card">
+    <p>作者様ご本人による登録のほか、代理登録（※作者様より許可を得ている作品のみ）も受け付けております。</p>
+    <p><a class="btn" href="register/">登録ページへ</a></p>
+  </div>
+
+  <h2>データについて</h2>
+  <div class="card">
+    <ul>
+      <li>カタログのデータは <b>CC0</b>（パブリック・ドメイン）です。データを引用・転載される際は、出典として「CardWirth 共用カタログ」を記載していただけますと幸いです（任意）。</li>
+      <li>データ構成：<span class="url">index.json</span>（全年齢・R15用） / <span class="url">index-r18.json</span>（R18用） / <span class="url">meta.json</span>（更新確認用）</li>
+      <li>更新履歴は <a href="https://github.com/seihayukimi-oss/cardwirth-catalog">GitHub リポジトリ</a>にてご確認いただけます。</li>
+    </ul>
+  </div>
+
+  <footer>
+    運営：清葉雪見　／　「Card Wirth」の著作権は group Ask に帰属します。
+  </footer>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script>
+// URLのコピー（押すと、下に「コピーしました」と出す）
+document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
+  const text = document.querySelector(b.dataset.copy).textContent.trim();
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch {
+    const t = document.createElement('textarea'); t.value = text; document.body.append(t); t.select();
+    try { ok = document.execCommand('copy'); } catch {} t.remove();
+  }
+  const el = document.getElementById('toast');
+  el.textContent = ok ? 'URLをコピーしました！' : 'コピーできませんでした。URLを長押し（ドラッグ）して選んでください';
+  el.hidden = false; clearTimeout(el._t); el._t = setTimeout(() => { el.hidden = true; }, 2500);
+}));
+</script>
+</body>
+</html>

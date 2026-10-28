@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登録内容の変更・解除｜CardWirth 共用カタログ</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../config.js"></script>
+<script src="../form.js"></script>
+<script>window.onTurnstile = () => window.dispatchEvent(new Event('cw-turnstile'));</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstile" async defer></script>
+</head>
+<body>
+<main>
+  <p><a href="../">← 共用カタログ トップへ</a></p>
+  <h1>登録内容の変更・解除</h1>
+  <p class="lead">作品ID（例：e00012）は、CWカタログの作品詳細画面または登録完了時の画面に表示されています。</p>
+  <div class="card">
+    <div class="row2">
+      <label class="field">作品ID<input id="id" placeholder="e00012" autocomplete="off"></label>
+      <label class="field">編集キー<span class="hint">内容の変更・削除時に使用します</span><input id="key" placeholder="XXXX-XXXX-…" autocomplete="off"></label>
+    </div>
+    <div id="ts"></div>
+    <p id="msg" class="msg" hidden></p>
+  </div>
+
+  <h2>登録内容の編集</h2>
+  <div class="card">
+    <p><button class="btn" type="button" id="load">現在の登録内容を読み込む</button></p>
+    <p id="msg-load" class="msg" hidden></p>
+    <form id="edit" hidden novalidate>
+      <div id="fields"></div>
+      <p><button class="btn" type="submit">この内容で更新する</button></p>
+      <p id="msg-edit" class="msg" hidden></p>
+    </form>
+  </div>
+
+  <h2>登録の削除（カタログから解除）</h2>
+  <div class="card">
+    <p>カタログから作品を削除します（作品IDおよび編集キーが必要です）。</p>
+    <p><button class="btn" type="button" id="unreg">登録を削除する</button></p>
+    <p id="msg-unreg" class="msg" hidden></p>
+  </div>
+
+  <h2 id="verify">サイト認証（作者本人への権限引き継ぎ）</h2>
+  <div class="card">
+    <ol>
+      <li>「確認用コードを発行」を押す（作品IDのみで発行可能です）</li>
+      <li>発行されたコード（<code>cw-catalog-verify:…</code>）を、配布ページ・紹介ページ・公式サイトのいずれかに記載する</li>
+      <li>「認証を実行」を押す → コードが確認され次第、作者本人の登録へ切り替わり<b>新しい編集キー</b>が発行されます（旧キーは無効化されます）</li>
+    </ol>
+    <p>※代理登録された作品の引き継ぎや、編集キー紛失時にご利用いただけます。認証コードは確認完了後に削除して問題ありません。</p>
+    <p><button class="btn" type="button" id="vstart">確認用コードを発行</button> <button class="btn" type="button" id="vcheck">認証を実行</button></p>
+    <p id="vtoken" class="msg" hidden></p>
+    <p id="msg-verify" class="msg" hidden></p>
+  </div>
+
+  <h2>掲載停止の申請（作者本人専用）</h2>
+  <div class="card">
+    <p>原作者様でカタログへの掲載取りやめを希望される場合は、こちらから申請してください。編集キーをお持ちでない場合でも、<b>申請と同時に非公開</b>になります（※後ほど管理者が内容を確認いたします）。</p>
+    <label class="field">理由（任意）<input id="reason" maxlength="500" placeholder="例：作者です。カタログに載せないでください"></label>
+    <p><button class="btn" type="button" id="takedown">掲載停止を申請する</button></p>
+    <p id="msg-takedown" class="msg" hidden></p>
+  </div>
+</main>
+<script>
+(async () => {
+  const msg = CW.$('#msg');
+  const form = CW.$('#edit');
+  CW.$('#fields').innerHTML = CW.fieldsHtml;
+  CW.wire(form);
+  if (!window.CW_CONFIG.api) CW.msg(msg, '受付の準備中です。もうしばらくお待ちください', 'warn');
+  const widget = await CW.turnstile(CW.$('#ts'));
+  // CWカタログから「?id=e00012」つきで開いたら、作品IDを入れておく
+  const fromUrl = (new URLSearchParams(location.search).get('id') || '').trim().toLowerCase();
+  if (/^e\d{5,}$/.test(fromUrl)) CW.$('#id').value = fromUrl;
+  const id = () => CW.$('#id').value.trim().toLowerCase();
+  const key = () => CW.$('#key').value.trim();
+  const boxes = ['#msg-load', '#msg-edit', '#msg-unreg', '#msg-verify', '#msg-takedown'].map((q) => CW.$(q));
+  // 押したボタンのすぐ下に、結果を出す（ほかのボタンの結果は消す）
+  const say = (box, text, kind = '') => {
+    for (const b of boxes) if (b !== box) CW.msg(b, '');
+    CW.msg(box, text, kind);
+    if (text) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  };
+  const run = async (box, fn) => { try { say(box, '送っています…'); await fn((t, k = 'ok') => say(box, t, k)); } catch (e) { say(box, e.message, 'bad'); } };
+  const showKey = (k) => `新しい編集キー：${k}　⚠ 二度と表示されません。必ず控えてください。`;
+  const st = (s) => ({ public: '公開中', pending: '承認待ち', held: '一時保留中', private: '非公開', removed: '登録解除ずみ' }[s] || s);
+
+  CW.$('#load').addEventListener('click', () => run(CW.$('#msg-load'), async (done) => {
+    const r = await CW.get(`/api/entry?id=${encodeURIComponent(id())}`);
+    CW.fill(form, r.entry);
+    form.hidden = false;
+    done(`「${r.entry.name}」（${st(r.entry.state)}・${r.entry.claim === 'author' ? '作者さん本人の登録' : '代理登録'}）を読み込みました。修正の上、下の「この内容で更新する」ボタンを押してください。`);
+  }));
+  form.addEventListener('submit', (ev) => { ev.preventDefault(); run(CW.$('#msg-edit'), async (done) => {
+    const r = await CW.send('/api/edit', { ...CW.read(form), id: id(), key: key() }, widget);
+    done(r.state === 'pending' ? '修正完了しました。配布ページで作品名と作者名が見つからなかったので、管理人が確かめてから載せます（承認待ち）。' : '修正完了しました（数分で反映されます）。');
+  }); });
+  CW.$('#unreg').addEventListener('click', () => run(CW.$('#msg-unreg'), async (done) => {
+    if (!confirm('登録を削除して、カタログから外します。よろしいですか？')) { done(''); return; }
+    await CW.send('/api/unregister', { id: id(), key: key() }, widget);
+    done('登録を削除しました（数分で反映されます）。');
+  }));
+  CW.$('#vstart').addEventListener('click', () => run(CW.$('#msg-verify'), async (done) => {
+    const r = await CW.send('/api/verify/start', { id: id() }, widget);
+    CW.msg(CW.$('#vtoken'), `確認用コード：${r.token}　（7日間有効）。次のいずれかのページに記載してから「認証を実行」を押してください：${r.pages.join('、') || '（配布ページ・紹介ページ・作者さんのサイトのURLを、先に登録してください）'}`, 'ok');
+    done('');
+  }));
+  CW.$('#vcheck').addEventListener('click', () => run(CW.$('#msg-verify'), async (done) => {
+    const r = await CW.send('/api/verify/check', { id: id() }, widget);
+    CW.$('#key').value = r.edit_key;
+    done(`作者さん本人の登録にしました。${showKey(r.edit_key)}`);
+  }));
+  CW.$('#takedown').addEventListener('click', () => run(CW.$('#msg-takedown'), async (done) => {
+    if (!confirm('掲載停止を申請し、この作品をすぐに非公開にします。よろしいですか？')) { done(''); return; }
+    await CW.send('/api/takedown', { id: id(), reason: CW.$('#reason').value }, widget);
+    done('掲載停止を受け付け、非公開にしました（数分で反映されます）。後ほど管理者が内容を確認いたします。');
+  }));
+  if (location.hash === '#verify') CW.$('#verify').scrollIntoView();
+})();
+</script>
+</body>
+</html>

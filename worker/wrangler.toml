@@ -1,0 +1,21 @@
+# 共用カタログの受付（Cloudflare Workers）
+# 秘密の値（TURNSTILE_SECRET・GH_APP_ID・GH_APP_PRIVATE_KEY・GH_APP_INSTALLATION_ID・ADMIN_OWNER_HASH）は、
+# Cloudflare の画面（Workers → cardwirth-catalog → Settings → Variables and Secrets）で登録する。ここには書かない。
+name = "cardwirth-catalog"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+REPO = "seihayukimi-oss/cardwirth-catalog"
+ALLOW_ORIGIN = "https://seihayukimi-oss.github.io"
+TURNSTILE_SITE_KEY = "0x4AAAAAAFmxYYeZ25nnx8vl"
+PAGES_URL = "https://seihayukimi-oss.github.io/cardwirth-catalog"
+
+# 非公開の置き場（管理人・操作の記録・Discord の送り先・通報の数）。
+# id を書かなければ、最初に置くときに Cloudflare が自動で作り、2回目からは同じものを使い続ける
+[[kv_namespaces]]
+binding = "KV"
+
+[observability]
+enabled = true

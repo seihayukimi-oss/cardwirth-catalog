@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>作品の通報｜CardWirth 共用カタログ</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../config.js"></script>
+<script src="../form.js"></script>
+<script>window.onTurnstile = () => window.dispatchEvent(new Event('cw-turnstile'));</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstile" async defer></script>
+</head>
+<body>
+<main>
+  <p><a href="../">← 共用カタログ トップへ</a></p>
+  <h1>作品の通報</h1>
+  <p class="lead">共用カタログに掲載されている作品の問題点について、管理者に通知します。</p>
+
+  <div class="card">
+    <ul class="muted">
+      <li><b>原作者様</b>で掲載停止をご希望の場合は、<a href="../manage/">登録内容の変更・解除</a>ページ内の「掲載停止の申請」をご利用ください（即時に非公開となります）。</li>
+      <li>同一理由による通報が一定数に達した場合、管理者が確認を行うまで該当作品は<b>「一時保留（CWカタログの初期表示から除外）」</b>状態となります。</li>
+      <li>通報内容や通報者の情報が第三者に公開されることはありません。重複通報のカウント防止のため、通報者のIPアドレスは復元不可能なハッシュ値（識別子）としてのみ記録され、対応完了時または最長1年で自動消去されます。</li>
+    </ul>
+  </div>
+
+  <form id="report" class="card" novalidate>
+    <label class="field">作品ID <b class="req">必須</b><span class="hint">CWカタログの作品詳細画面に表示されているIDを入力してください（例：e00012）</span><input id="id" name="id" placeholder="e00012" autocomplete="off"></label>
+    <p id="entry-info" class="msg" hidden></p>
+
+    <div class="field">通報の理由 <b class="req">必須</b>
+      <div class="choices col">
+        <label><input type="radio" name="reason" value="r18"> 年齢区分の不備（R18作品が全年齢・R15表記になっている等）</label>
+        <label><input type="radio" name="reason" value="unauthorized"> 無断転載・無断改変・作者様の意向違反</label>
+        <label><input type="radio" name="reason" value="abuse"> 危険なファイル・不適切なコンテンツ</label>
+        <label><input type="radio" name="reason" value="link"> リンク切れ・配布先の不備</label>
+        <label><input type="radio" name="reason" value="other"> その他</label>
+      </div>
+    </div>
+    <label class="field">詳細内容（任意 ※「その他」選択時は必須）<span class="hint">問題の具体的な状況・詳細をご記入ください（※個人情報等の入力はご遠慮ください）。</span><textarea name="comment" rows="4" maxlength="500"></textarea></label>
+    <div id="ts"></div>
+    <p><button class="btn" type="submit">通報する</button></p>
+    <p id="msg" class="msg" hidden></p>
+  </form>
+</main>
+<script>
+(async () => {
+  const form = CW.$('#report');
+  const idEl = CW.$('#id');
+  const info = CW.$('#entry-info');
+  const msg = CW.$('#msg');
+  const RATING = { all: '全年齢', r15: 'R15', r18: 'R18' };
+  const fromUrl = (new URLSearchParams(location.search).get('id') || '').trim().toLowerCase();
+  if (/^e\d{5,}$/.test(fromUrl)) idEl.value = fromUrl;
+
+  // 作品IDを入れたら、どの作品かを見せる（まちがい防止）
+  let lastId = '';
+  async function showEntry() {
+    const id = idEl.value.trim().toLowerCase();
+    if (id === lastId) return;
+    lastId = id;
+    if (!/^e\d{5,}$/.test(id)) { CW.msg(info, id ? '作品IDは「e」と5桁以上の数字です（例：e00012）' : '', id ? 'warn' : ''); return; }
+    try {
+      const { entry } = await CW.get(`/api/entry?id=${encodeURIComponent(id)}`);
+      if (!['public', 'held'].includes(entry.state || 'public')) { CW.msg(info, 'この作品は、今カタログに載っていません', 'warn'); return; }
+      CW.msg(info, `「${entry.name}」／作者：${entry.author}（${RATING[entry.rating] || '全年齢'}${entry.state === 'held' ? '・一時保留中' : ''}）`, 'ok');
+    } catch (e) { CW.msg(info, e.message, 'bad'); }
+  }
+  idEl.addEventListener('change', showEntry);
+  idEl.addEventListener('blur', showEntry);
+  if (idEl.value) showEntry();
+
+  const widget = await CW.turnstile(CW.$('#ts'));
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const btn = form.querySelector('button[type=submit]');
+    const f = new FormData(form);
+    const body = { id: idEl.value.trim().toLowerCase(), reason: f.get('reason') || '', comment: f.get('comment') || '' };
+    if (!/^e\d{5,}$/.test(body.id)) { CW.msg(msg, '作品IDを入れてください（例：e00012）', 'bad'); return; }
+    if (!body.reason) { CW.msg(msg, '通報の理由を選んでください', 'bad'); return; }
+    btn.disabled = true;
+    CW.msg(msg, '送っています…');
+    try {
+      const r = await CW.send('/api/report', body, widget);
+      CW.msg(msg, r.already ? 'この作品への同一理由の通報は、すでに受け付けております。ご協力ありがとうございます。'
+        : r.held ? '通報を受け付けました。同一理由の通報が一定数に達したため、管理者が確認を行うまで一時保留としました。ご協力ありがとうございます。'
+        : '通報を受け付けました。管理者が内容を確認いたします。ご協力ありがとうございます。', 'ok');
+      form.querySelector('[name=comment]').value = '';
+    } catch (e) { CW.msg(msg, e.message, 'bad'); } finally { btn.disabled = false; }
+  });
+})();
+</script>
+</body>
+</html>
