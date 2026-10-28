@@ -37,7 +37,7 @@
 | `public/` | 自動で作るカタログ（手で直さない） |
 | `scripts/build.mjs` | カタログを作る（toPublic / buildCatalog / buildMeta） |
 | `worker/src/` | 受付：index.js（登録・変更・解除・掲載停止・サイト認証）、admin.js（管理ページ用）、report.js（通報）、security.js（安全の報告の Webhook）、notify.js（Discord）、github.js、tar.js、common.js、util.js |
-| `site/` | ページ：トップ・register/（register/bulk/＝まとめて登録。受付には1作品ずつ /api/register で送り、Turnstile は作品ごとにやり直す）・manage/・report/・admin/（管理ページ）。config.js に受付のURL |
+| `site/` | ページ：トップ・register/（register/bulk/＝複数シナリオの一括登録。受付には1作品ずつ /api/register で送り、Turnstile は作品ごとにやり直す）・manage/・report/・admin/（管理ページ）。config.js に受付のURL |
 | `test/` | build.test.mjs・worker.test.mjs・admin.test.mjs（`npm test`、全16件） |
 
 - 受付のURL：`https://cardwirth-catalog.seiha-yukimi-ilst.workers.dev`（`/api/health` で設定がそろっているか分かる）

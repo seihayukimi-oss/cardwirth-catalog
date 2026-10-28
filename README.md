@@ -31,7 +31,7 @@ CardWirth（1.50・Next・Py）のシナリオ・素材・スキンの**配布�
 | `entries/` | 作品1件ずつ（`e00001.json` など）。形は [docs/データの形.md](docs/データの形.md) |
 | `blocklist.json` | 受け付けない URL・サイト・作者 |
 | `public/` | 自動で作るカタログ（手で直さない） |
-| `site/` | GitHub Pages のページ（トップ・登録・まとめて登録・変更と解除・通報・管理） |
+| `site/` | GitHub Pages のページ（トップ・登録・複数シナリオの一括登録・変更と解除・通報・管理） |
 | `scripts/build.mjs` | カタログを作るプログラム |
 
 ## 文書
