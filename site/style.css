@@ -88,6 +88,9 @@ button.link { background: none; border: 0; padding: 0; color: var(--accent); tex
 .actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
 .reason { margin: 4px 0 6px; }
 details.sub { border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 6px; }
+/* 登録ページの「複数シナリオを登録はこちら」ボタン（スマホでも1行に収まらなければ、ボタンの下に説明を回す） */
+.bulk-link { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.bulk-link .btn { white-space: nowrap; }
 /* まとめて登録：作品ごとの欄 */
 .bulk-rows { list-style: none; padding: 0; margin: 0; }
 .bulk-row .row-inline { margin-top: 0; align-items: center; }
