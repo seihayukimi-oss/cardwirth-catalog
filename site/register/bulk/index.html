@@ -20,11 +20,11 @@
   <form id="bulk" class="card" novalidate>
     <fieldset>
       <legend>全部の作品に共通</legend>
-      <label class="field">作者名 <b class="req">必須</b><span class="hint">作者名またはサークル名（※代理登録の場合、登録者ではなく原作者名を入力してください）</span><input name="author" required maxlength="200"></label>
+      <label class="field"><b class="req">必須</b> 作者名<span class="hint">作者名またはサークル名（※代理登録の場合、登録者ではなく原作者名を入力してください）</span><input name="author" required maxlength="200"></label>
       <label class="field">作者さんのサイト<input name="site" type="url" placeholder="https://"></label>
       <label class="field">紹介ページ<span class="hint">作者さんの紹介ページ・X・Misskey など。全部の作品に入れます。1行に1つ</span><textarea name="intro" rows="2"></textarea></label>
       <label class="field">予備の配布URL<span class="hint">作者さんの配布ページなど、全部の作品の予備として入れます。1行に1つ。「名前 | URL」とも書けます</span><textarea name="more_urls" rows="2"></textarea></label>
-      <label class="field">情報元・確認方法 <b class="req">必須</b><span class="hint">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span>
+      <label class="field"><b class="req">必須</b> 情報元・確認方法<span class="hint">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span>
         <select name="checked" required><option value="">選んでください</option><option value="readme">Readme</option><option value="site">作者公式サイト・配布ページ</option><option value="author">作者本人へ直接確認</option><option value="other">その他</option></select></label>
       <label class="field">補足<input name="checked_note" maxlength="300" placeholder="例：Readmeの「再配布について」の項目"></label>
     </fieldset>
@@ -41,7 +41,7 @@
         <label><input type="radio" name="claim" value="proxy" checked> 作者さん以外（代理登録）</label>
         <label><input type="radio" name="claim" value="author"> 作者本人</label>
       </div>
-      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> どの作品も、代理での登録が許可されています（Readme・作者さんのサイトなどで確かめました）<b class="req">必須</b></label>
+      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> どの作品も、代理での登録が許可されています（Readme・作者さんのサイトなどで確かめました）</label>
       <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../../manage/#verify">サイト認証</a>で作品ごとに本人の登録にできます。</p>
     </fieldset>
     <fieldset>
@@ -73,7 +73,7 @@
     <li class="card bulk-row">
       <div class="row-inline"><b class="grow row-no"></b><button class="btn small ghost row-del" type="button">この作品を外す</button></div>
       <div class="row2">
-        <label class="field">作品名 <b class="req">必須</b><input data-k="name" required maxlength="200"></label>
+        <label class="field"><b class="req">必須</b> 作品名<input data-k="name" required maxlength="200"></label>
         <label class="field">バージョン<input data-k="version" maxlength="50" placeholder="例：1.10"></label>
       </div>
       <div class="row2">
@@ -83,11 +83,11 @@
           <select data-k="format"><option value="classic">クラシック（1.50）</option><option value="next">Next仕様</option><option value="wsn">Py仕様（WSN）</option></select></label>
       </div>
       <div class="row2">
-        <label class="field">配布URL <b class="req">必須</b><input data-k="url" type="url" required placeholder="https://"></label>
+        <label class="field"><b class="req">必須</b> 配布URL<input data-k="url" type="url" required placeholder="https://"></label>
         <label class="field">URLの種類
           <select data-k="url_kind"><option value="page">配布ページ</option><option value="direct">zipなどへの直接のリンク</option><option value="list">ファイル一覧（アップローダーの一覧ページ）</option></select></label>
       </div>
-      <div class="field">対象年齢 <b class="req">必須</b>
+      <div class="field"><b class="req">必須</b> 対象年齢
         <div class="choices rating">
           <label><input type="radio" value="all"> 全年齢</label>
           <label><input type="radio" value="r15"> R15</label>

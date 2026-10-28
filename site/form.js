@@ -113,8 +113,8 @@ window.CW.fieldsHtml = `
   <legend>作品</legend>
   <label class="field">種類
     <select name="type"><option value="scenario">シナリオ</option><option value="skin">スキン（CardWirthPy）</option><option value="material">素材（画像・音など）</option></select></label>
-  <label class="field">作品名 <b class="req">必須</b><input name="name" required maxlength="200"></label>
-  <label class="field">作者名 <b class="req">必須</b><span class="hint">作者名またはサークル名（※代理登録の場合、登録者ではなく原作者名を入力してください）</span><input name="author" required maxlength="200"></label>
+  <label class="field"><b class="req">必須</b> 作品名<input name="name" required maxlength="200"></label>
+  <label class="field"><b class="req">必須</b> 作者名<span class="hint">作者名またはサークル名（※代理登録の場合、登録者ではなく原作者名を入力してください）</span><input name="author" required maxlength="200"></label>
   <div class="row2">
     <label class="field">バージョン<input name="version" maxlength="50" placeholder="例：1.10"></label>
     <label class="field">形式
@@ -124,7 +124,7 @@ window.CW.fieldsHtml = `
 
 <fieldset>
   <legend>配布先</legend>
-  <label class="field">配布URL <b class="req">必須</b><span class="hint">作者さんの配布ページ・BOOTH・アップローダーなど</span><input name="url" type="url" required placeholder="https://"></label>
+  <label class="field"><b class="req">必須</b> 配布URL<span class="hint">作者さんの配布ページ・BOOTH・アップローダーなど</span><input name="url" type="url" required placeholder="https://"></label>
   <div class="row2">
     <label class="field">URLの種類
       <select name="url_kind"><option value="page">配布ページ</option><option value="direct">zipなどへの直接のリンク</option><option value="list">ファイル一覧（アップローダーの一覧ページ）</option></select></label>
@@ -144,7 +144,7 @@ window.CW.fieldsHtml = `
 
 <fieldset>
   <legend>シナリオラベル</legend>
-  <div class="field">対象年齢 <b class="req">必須</b>
+  <div class="field"><b class="req">必須</b> 対象年齢
     <div class="choices">
       <label><input type="radio" name="rating" value="all"> 全年齢</label>
       <label><input type="radio" name="rating" value="r15"> R15</label>
@@ -165,13 +165,13 @@ window.CW.fieldsHtml = `
 
 <fieldset>
   <legend>確かめたこと</legend>
-  <label class="field">情報元・確認方法 <b class="req">必須</b><span class="hint">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span>
+  <label class="field"><b class="req">必須</b> 情報元・確認方法<span class="hint">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span>
     <select name="checked" required><option value="">選んでください</option><option value="readme">Readme</option><option value="site">作者公式サイト・配布ページ</option><option value="author">作者本人へ直接確認</option><option value="other">その他</option></select></label>
   <label class="field">補足<input name="checked_note" maxlength="300" placeholder="例：Readmeの「再配布について」の項目"></label>
   <div class="field">改変版ですか？
     <div class="choices"><label><input type="radio" name="derivative" value="no" checked> いいえ</label><label><input type="radio" name="derivative" value="yes"> はい（ほかの作品を改変したもの）</label></div>
   </div>
-  <label class="field if-derivative">もとの作品 <b class="req">必須</b><input name="derivative_of" maxlength="200"></label>
-  <label class="field if-derivative">改変してよいと分かるもの <b class="req">必須</b><span class="hint">もとの作品の規約のURL・Readmeの項目など</span><input name="derivative_basis" maxlength="500"></label>
+  <label class="field if-derivative"><b class="req">必須</b> もとの作品<input name="derivative_of" maxlength="200"></label>
+  <label class="field if-derivative"><b class="req">必須</b> 改変してよいと分かるもの<span class="hint">もとの作品の規約のURL・Readmeの項目など</span><input name="derivative_basis" maxlength="500"></label>
 </fieldset>
 `;

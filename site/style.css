@@ -30,7 +30,8 @@ legend { font-weight: 600; padding: 0 6px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
 @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
 .hint { color: var(--sub); font-size: .82rem; }
-.req { color: #fff; background: var(--accent); font-size: .7rem; border-radius: 4px; padding: 0 5px; margin-left: 4px; vertical-align: 1px; }
+/* 必須の印：文の前に置き、印そのものは途中で切れないように */
+.req { display: inline-block; white-space: nowrap; color: #fff; background: var(--accent); font-size: .7rem; line-height: 1.5; border-radius: 4px; padding: 0 5px; margin-right: 4px; vertical-align: 1px; }
 .choices { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .check { display: block; margin: 8px 0; }
 button.btn { border: 0; cursor: pointer; font: inherit; }
