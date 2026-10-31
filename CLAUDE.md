@@ -53,6 +53,7 @@
 - bot（cardwirth-catalog-bot）も `entries/` などに書き込むので、送る前に必ず最新を取り込む
 - 実在の作品名・作者名・サイト名は、ページ・文書・試験のどこにも書かない。例が要るときは「サンプル店」「テスト冒険譚」「デバッグ読みシナ」「テスト作者」など、ひと目でサンプルと分かる名前にする
 - 履歴（git）は 2026-10-28 に1つにまとめた（作品の登録が始まる前）。**作品の登録が始まったあとは、履歴を書き換えない（上書きで送らない）**。登録した人の記録を、だれでも見られる形で残すとお約束しているため
+- **アプリの 1.0.0 のときに、作品の登録が始まる前なら、このリポジトリもいったん削除して同じ名前で作り直し、昔の記録を消す**（2026-10-31 に運営者が決めた）。作り直したあとは、GitHub Pages・Secrets（CLOUDFLARE_API_TOKEN・CLOUDFLARE_ACCOUNT_ID）・GitHub App（cardwirth-catalog-bot）の入れ直し（**Installation ID が変わるので、Worker の Secret GH_APP_INSTALLATION_ID も入れ替える**）・Webhook（安全の報告）・Private vulnerability reporting をやり直す。Cloudflare の KV・Turnstile・管理人キーは、リポジトリと別なのでそのまま。登録が始まったあとは作り直さない
 - 作品のファイルを消すときは、**先に管理ページで「通報を片付ける」**（通報の記録は作品IDごとに KV にあり、同じIDが次の作品に使われるため）
 
 ## ハマりどころ
