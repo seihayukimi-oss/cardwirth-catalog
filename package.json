@@ -1,0 +1,14 @@
+{
+  "name": "cardwirth-catalog",
+  "private": true,
+  "type": "module",
+  "description": "CardWirth 共用カタログ（データは CC0、プログラムは MIT）",
+  "scripts": {
+    "test": "node --test test/build.test.mjs test/worker.test.mjs test/admin.test.mjs",
+    "build": "node scripts/build.mjs",
+    "deploy": "wrangler deploy --config worker/wrangler.toml"
+  },
+  "devDependencies": {
+    "wrangler": "4.149.0"
+  }
+}

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>よくある質問（Q&amp;A）｜CardWirth 共用カタログ</title>
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="description" content="CWカタログ（ツール）と CardWirth 共用カタログ登録サイトの、よくある質問とガイドラインです。">
+<link rel="stylesheet" href="../style.css">
+<!--
+  アイコン（search・copy・circle-help）は Lucide のものを書き写しています。
+  Lucide：ISC License / Copyright (c) Lucide Icons and Contributors
+  Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
+  provided that the above copyright notice and this permission notice appear in all copies.
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR
+  CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+  NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+<style>
+  /* このページだけの見た目（色は登録サイトのものを使う） */
+  /* 見出しの帯：淡い色（登録サイトの赤茶をうすく。グラデーションなし） */
+  .hero { margin: 8px 0 22px; padding: 22px 24px; border-radius: 16px; color: var(--ink); border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--line));
+    background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+  .hero .badge { display: inline-block; padding: 1px 12px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 14%, var(--panel)); color: var(--accent); font-size: .76rem; font-weight: 600; margin-bottom: 8px; }
+  .hero h1 { margin: 0 0 4px; font-size: 1.5rem; color: var(--accent); }
+  .hero p { margin: 0; color: var(--sub); font-size: .92rem; }
+  .tools { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+  .search { position: relative; flex: 1 1 260px; }
+  .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--sub); }
+  .search input { width: 100%; font: inherit; padding: 10px 14px 10px 40px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink); }
+  .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .copyall { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+  .copyall:hover { border-color: var(--accent); }
+  .faq { display: flex; flex-direction: column; gap: 14px; }
+  .qa { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; display: flex; gap: 14px; }
+  .mark { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-weight: 700; font-size: .9rem; }
+  .mark.q { background: color-mix(in srgb, var(--accent) 16%, var(--panel)); color: var(--accent); }
+  .mark.a { width: 26px; height: 26px; border-radius: 7px; font-size: .8rem; background: color-mix(in srgb, #2f6f45 18%, var(--panel)); color: #2f6f45; }
+  @media (prefers-color-scheme: dark) { .mark.a { color: #7cc28f; } }
+  .qa .body { flex: 1; min-width: 0; }
+  .qa h3 { margin: 2px 0 10px; font-size: 1.02rem; }
+  .qa .ans { display: flex; gap: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .qa .ans p { margin: 0; color: var(--sub); }
+  .empty { text-align: center; color: var(--sub); padding: 40px 0; }
+  /* 「未来永劫無料だよ。」：90年代のワードアート（動かない） */
+  .wordart-wrap { padding: 6px 4px; overflow: hidden; }
+  /* 後ろの層：立体の影と光（文字そのものは透明）。前の層：パステルの虹色の文字＋ふだんの文字の色の縁取り */
+  .wordart { display: inline-grid; font-size: 2.4rem; font-weight: 900; font-family: Impact, "Arial Black", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    letter-spacing: 2px; white-space: nowrap; transform: skew(-6deg) rotate(-1.5deg); filter: drop-shadow(3px 5px 10px rgb(255 0 128 / .8)) saturate(1.4); margin: 6px 2px; }
+  .wordart > span, .wordart::before { grid-area: 1 / 1; }
+  .wordart::before { content: attr(data-text); color: transparent; -webkit-text-stroke: 5px var(--ink);
+    text-shadow: 2px 2px 0 #000, 3px 3px 0 #ff007f, 4px 4px 0 #ff007f, 5px 5px 0 #00f0ff, 6px 6px 0 #00f0ff, 7px 7px 0 #ffff00, 8px 8px 0 #ffff00, 9px 9px 0 #000, 10px 10px 16px rgb(0 240 255 / .95); }
+  .wordart > span { background: linear-gradient(90deg, #ff0000 0%, #ff8a00 13%, #ffe600 26%, #00e33d 40%, #00d5ff 54%, #2a3bff 68%, #b000ff 82%, #ff00aa 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+  @media (max-width: 480px) { .wordart { font-size: 1.4rem; letter-spacing: 1px; } .qa { padding: 14px; gap: 10px; } }
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="in">
+    <a href="../"><img src="../apple-touch-icon.png" alt=""></a>
+    <a href="../"><div class="t">CWカタログ</div><div class="s">ツール / 共用カタログ登録サイト</div></a>
+  </div>
+</header>
+<script src="../menu.js" defer></script>
+<main>
+  <p><a href="../">← 共用カタログ トップへ</a></p>
+  <section class="hero">
+    <span class="badge">Q&amp;A ドキュメント</span>
+    <h1>よくある質問とガイドライン</h1>
+    <p>CWカタログの仕様、利用規約、自由度、安全面についてのまとめです。</p>
+  </section>
+
+  <div class="tools">
+    <label class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+      <input type="search" id="search" placeholder="質問やキーワードで検索…" aria-label="質問やキーワードで検索">
+    </label>
+    <button class="copyall" type="button" id="copyall">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+      全質問をコピー
+    </button>
+  </div>
+
+  <div class="faq" id="faq">
+    <div class="qa"><span class="mark q">Q</span><div class="body"><h3 class="q-text">これ何？</h3>
+      <div class="ans"><span class="mark a">A</span><p class="a-text">ファイルの中に公開アプロダURLからDLして更新チェックできたり共用、個人カタログリストから一括DLできる機能だよ</p></div></div></div>
+
+    <div class="qa"><span class="mark q">Q</span><div class="body"><h3 class="q-text">これ無料？</h3>
+      <div class="ans"><span class="mark a">A</span><div class="a-text wordart-wrap"><span class="wordart" data-text="未来永劫無料だよ。"><span>未来永劫無料だよ。</span></span></div></div></div></div>
+
+    <div class="qa"><span class="mark q">Q</span><div class="body"><h3 class="q-text">アプリの安全面どう？</h3>
+      <div class="ans"><span class="mark a">A</span><p class="a-text">基本的に問題ないよ。ただ、個人開発で証明書がない関係でアプリ起動時Windowsのアプリコントロールなどに止められる場合があるよ。不安だったらやれること少ないけどHTML版使ってね。</p></div></div></div>
+
+    <div class="qa"><span class="mark q">Q</span><div class="body"><h3 class="q-text">改変自由？</h3>
+      <div class="ans"><span class="mark a">A</span><p class="a-text">どうぞご自由に。オープンソースかつ改造、再配布自由です。</p></div></div></div>
+
+    <div class="qa"><span class="mark q">Q</span><div class="body"><h3 class="q-text">改変したの公開していい？</h3>
+      <div class="ans"><span class="mark a">A</span><p class="a-text">ご自由にどうぞ。ただし無料かつ改変自由になるよう努めて。</p></div></div></div>
+
+    <div class="qa"><span class="mark q">Q</span><div class="body"><h3 class="q-text">自分のギルドと連携していい？(カタログ配布も)</h3>
+      <div class="ans"><span class="mark a">A</span><p class="a-text">どうぞどうぞ！！歓迎します！！連携もご自由に！！</p></div></div></div>
+
+    <div class="qa"><span class="mark q">Q</span><div class="body"><h3 class="q-text">エンジン作ってる者です。流用していい？</h3>
+      <div class="ans"><span class="mark a">A</span><p class="a-text">是非どうぞ！！！自由に改変してください！！！</p></div></div></div>
+
+    <div class="qa"><span class="mark q">Q</span><div class="body"><h3 class="q-text">これよりもっといいの欲しいんだけど作っていい？</h3>
+      <div class="ans"><span class="mark a">A</span><p class="a-text">どうぞご自由に制作してください！！</p></div></div></div>
+  </div>
+
+  <div class="empty" id="empty" hidden>
+    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+    <p>該当する質問が見つかりませんでした。</p>
+  </div>
+
+  <footer>運営：清葉雪見　／　「Card Wirth」の著作権は group Ask に帰属します。</footer>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script>
+// 検索：質問と答えの文字で絞り込む
+const items = [...document.querySelectorAll('.qa')];
+const empty = document.getElementById('empty');
+document.getElementById('search').addEventListener('input', (ev) => {
+  const q = ev.target.value.trim().toLowerCase();
+  let n = 0;
+  for (const el of items) {
+    const hit = !q || el.querySelector('.q-text').textContent.toLowerCase().includes(q) || el.querySelector('.a-text').textContent.toLowerCase().includes(q);
+    el.hidden = !hit;
+    if (hit) n++;
+  }
+  empty.hidden = n > 0;
+});
+// 全質問をコピー
+document.getElementById('copyall').addEventListener('click', async () => {
+  const text = '【CWカタログ FAQ】\n\n' + items.map((el) => `・${el.querySelector('.q-text').textContent.trim()}\nA:${el.querySelector('.a-text').textContent.trim()}`).join('\n\n') + '\n';
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch {
+    const t = document.createElement('textarea'); t.value = text; document.body.append(t); t.select();
+    try { ok = document.execCommand('copy'); } catch {} t.remove();
+  }
+  const toast = document.getElementById('toast');
+  toast.textContent = ok ? '全質問をコピーしました！' : 'コピーできませんでした';
+  toast.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => { toast.hidden = true; }, 2500);
+});
+</script>
+</body>
+</html>
