@@ -27,7 +27,6 @@
   <p class="bulk-link"><a class="btn ghost" href="bulk/">複数シナリオを登録はこちら</a> <span class="hint">同じ作者さんの作品を、何作品かまとめて登録できます</span></p>
 
   <form id="reg" class="card" novalidate>
-    <div id="fields"></div>
     <fieldset id="claim-box">
       <legend>登録する人</legend>
       <div class="choices">
@@ -37,6 +36,7 @@
       <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> 代理での登録が許可されている作品です（Readme・作者さんのサイトなどで確かめました）</label>
       <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../manage/#verify">サイト認証</a>で本人の登録にできます。</p>
     </fieldset>
+    <div id="fields"></div>
     <fieldset>
       <legend>送る前に</legend>
       <ul class="hint">
@@ -65,8 +65,6 @@
 (async () => {
   const form = CW.$('#reg');
   CW.$('#fields').innerHTML = CW.fieldsHtml;
-  // 「登録する人」は「情報元・確認方法」のすぐ上に置く（本人かどうかで、選んでほしい情報元が変わるため）
-  form.querySelector('select[name=checked]')?.closest('fieldset')?.before(CW.$('#claim-box'));
   CW.wire(form);
   const msg = CW.$('#msg');
   if (!window.CW_CONFIG.api) CW.msg(msg, '受付の準備中です。もうしばらくお待ちください（登録はまだできません）', 'warn');
