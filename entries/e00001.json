@@ -27,18 +27,17 @@
   "rating": "all",
   "checked": "readme",
   "state": "public",
-  "claim": "proxy",
-  "claim_wish": "author",
+  "claim": "author",
   "registered": "2026-11-02T14:26:07.792Z",
-  "changed": "2026-11-02T14:26:07.792Z",
-  "edit_key_hash": "5e7f86958d75f7251ada443e0479bfedec60ae8ea372ecc64dafb9b8f1000667",
+  "changed": "2026-11-02T14:33:29.472Z",
+  "edit_key_hash": "44a4b000b5061e5e1750671c081f1e95fb73b1b257418be0151fa4649696c05d",
   "auto_check": {
     "ok": true,
     "where": "https://seesaawiki.jp/seihayukimicw/d/%b8%b0%b7%ea%a4%ce%a4%ca%a4%a4%ca%f5%c8%a2",
     "at": "2026-11-02T14:26:07.792Z"
   },
-  "verify": {
-    "token": "cw-catalog-verify:lf7z67qr2fmwxx9c",
-    "until": "2026-11-09T14:32:15.274Z"
+  "verified": {
+    "at": "2026-11-02T14:33:29.472Z",
+    "where": "https://seesaawiki.jp/seihayukimicw/"
   }
 }
