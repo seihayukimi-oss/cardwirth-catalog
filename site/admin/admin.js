@@ -37,7 +37,16 @@
   const when = (s) => { try { return s ? new Date(s).toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }) : ''; } catch { return s; } };
   const hostOf = (u) => { try { return new URL(u).hostname.toLowerCase(); } catch { return ''; } };
 
-  function msg(el, text, kind = '') { el.className = `msg ${kind}`; el.textContent = text; el.hidden = !text; }
+  // 行ごとに分けて出したいときは、要素の配列を渡す（中の文字は textContent で入れる）
+  function msg(el, text, kind = '') {
+    el.className = `msg ${kind}`;
+    if (Array.isArray(text)) el.replaceChildren(...text); else el.textContent = text;
+    el.hidden = Array.isArray(text) ? !text.length : !text;
+  }
+  /** msg に渡す1行（cls：key＝キー、danger＝赤い字） */
+  const line = (text, cls = '') => h('div', cls ? { class: `msg-line ${cls}` } : {}, text);
+  /** 新しいキーの知らせ（登録内容の変更・解除のページと同じ形） */
+  const keyLines = (head, key, warn) => [...head.map((t) => line(t)), line(key, 'key'), line(`⚠ ${warn}`, 'danger')];
   /** 作品の一覧の上に、ページを読み込み直すまで残る知らせを出す（新しいものを上に） */
   function doneNote(text, kind = 'ok') { $('#entries-done').prepend(h('p', { class: `msg ${kind}` }, text)); }
   function toast(text) {
@@ -374,7 +383,7 @@
     run(ev.currentTarget, $('#me-rekey-msg'), async () => {
       const r = await api('/api/admin/admins/rekey', {});
       S.key = r.key; if (store.get()) store.set(r.key);
-      return `新しいキー：${r.key}　⚠ 二度と表示されません。必ず控えてください`;
+      return keyLines(['新しいキー：'], r.key, '二度と表示されません。必ず控えてください。');
     });
   });
 
@@ -389,7 +398,7 @@
           h('td', {}, a.role === 'owner' ? '管理人' : '副管理人'),
           h('td', {}, a.webhook ? 'あり' : '—'),
           h('td', { class: 'nowrap' }, a.role === 'owner' ? '' : [
-            h('button', { type: 'button', class: 'btn small ghost', onclick: (ev) => { if (confirm(`「${a.name}」さんのキーを作り直します。今のキーは使えなくなります。よろしいですか？`)) run(ev.currentTarget, $('#admins-msg'), async () => { const k = await api('/api/admin/admins/rekey', { id: a.id }); return `「${a.name}」さんの新しいキー：${k.key}　⚠ 二度と表示されません。本人に、ほかの人に見られない方法で渡してください`; }); } }, 'キーを作り直す'),
+            h('button', { type: 'button', class: 'btn small ghost', onclick: (ev) => { if (confirm(`「${a.name}」さんのキーを作り直します。今のキーは使えなくなります。よろしいですか？`)) run(ev.currentTarget, $('#admins-msg'), async () => { const k = await api('/api/admin/admins/rekey', { id: a.id }); return keyLines([`「${a.name}」さんの新しいキー：`], k.key, '二度と表示されません。本人に、ほかの人に見られない方法で渡してください。'); }); } }, 'キーを作り直す'),
             ' ',
             h('button', { type: 'button', class: 'btn small danger', onclick: (ev) => { if (confirm(`「${a.name}」さんを副管理人から外します。よろしいですか？`)) run(ev.currentTarget, $('#admins-msg'), async () => { await api('/api/admin/admins/remove', { id: a.id }); await loadAdmins(); return `「${a.name}」さんを外しました`; }); } }, '外す'),
           ]),
@@ -400,7 +409,7 @@
     const r = await api('/api/admin/admins/add', { name: $('#admin-name').value });
     $('#admin-name').value = '';
     await loadAdmins();
-    return `「${r.admin.name}」さんを追加しました。キー：${r.key}　⚠ 二度と表示されません。本人に、ほかの人に見られない方法で渡してください`;
+    return keyLines([`「${r.admin.name}」さんを追加しました。`, 'キー：'], r.key, '二度と表示されません。本人に、ほかの人に見られない方法で渡してください。');
   }));
 
   // ------------------------------------------------------------ 記録

@@ -115,7 +115,7 @@
   CW.$('#vstart').addEventListener('click', () => run(CW.$('#msg-verify'), async (done) => {
     const r = await CW.send('/api/verify/start', { id: id() }, widget);
     CW.msg(CW.$('#vtoken'), [
-      CW.line(`確認用コード：${r.token}　（7日間有効）。`),
+      CW.line(`確認用コード：${r.token}　（7日間有効）`),
       CW.line('次のいずれかのページに記載してから「認証を実行」を押してください：'),
       ...(r.pages.length ? r.pages.map((u) => CW.line(`・${u}`, 'key')) : [CW.line('（配布ページ・紹介ページ・作者さんのサイトのURLを、先に登録してください）')]),
     ], 'ok');
