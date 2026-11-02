@@ -1,0 +1,39 @@
+{
+  "id": "e00005",
+  "type": "scenario",
+  "name": "星間列車の相席屋",
+  "author": "清葉雪見",
+  "version": "1.0.0",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/seiha_yukimiCW/download/13",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://seesaawiki.jp/seihayukimicw/",
+  "intro": [
+    {
+      "url": "https://seesaawiki.jp/seihayukimicw/d/%c0%b1%b4%d6%ce%f3%bc%d6%a4%ce%c1%ea%c0%ca%b2%b0"
+    }
+  ],
+  "tags": [
+    "短編",
+    "店シナ"
+  ],
+  "rating": "all",
+  "checked": "readme",
+  "state": "public",
+  "claim": "proxy",
+  "claim_wish": "author",
+  "registered": "2026-11-02T14:26:24.682Z",
+  "changed": "2026-11-02T14:26:24.682Z",
+  "edit_key_hash": "c6fe9dc7a3f8ec6c88a05c347fea766daa8cb13767237e876249ebc080804959",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/seiha_yukimiCW/download/13",
+    "at": "2026-11-02T14:26:24.682Z"
+  }
+}
