@@ -1,0 +1,39 @@
+{
+  "id": "e00003",
+  "type": "scenario",
+  "name": "アナタ迷子ノコナノネ！？",
+  "author": "清葉雪見",
+  "version": "1.0.0",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/seiha_yukimiCW/download/4",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://seesaawiki.jp/seihayukimicw/",
+  "intro": [
+    {
+      "url": "https://seesaawiki.jp/seihayukimicw/d/%a5%a2%a5%ca%a5%bf%cc%c2%bb%d2%a5%ce%a5%b3%a5%ca%a5%ce%a5%cd%a1%aa%a1%a9"
+    }
+  ],
+  "tags": [
+    "短編",
+    "100KB祭り"
+  ],
+  "rating": "all",
+  "checked": "readme",
+  "state": "public",
+  "claim": "proxy",
+  "claim_wish": "author",
+  "registered": "2026-11-02T14:26:16.666Z",
+  "changed": "2026-11-02T14:26:16.666Z",
+  "edit_key_hash": "7f8bf6276c5417eaf21e231e0ebe33fc489ea5b685618a661539976ca19b5c7a",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/seiha_yukimiCW/download/4",
+    "at": "2026-11-02T14:26:16.666Z"
+  }
+}
