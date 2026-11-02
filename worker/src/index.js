@@ -4,8 +4,10 @@
 //  POST /api/edit            編集キーで直す（URL・名前を変えたら、もう一度自動承認を確かめる）
 //  POST /api/unregister      編集キーで登録を解除する
 //  POST /api/takedown        掲載をやめてほしい（だれでも。すぐ非公開になり、管理人が確かめる）
-//  POST /api/verify/start    サイト認証を始める（確認用の文字を返す）
-//  POST /api/verify/check    サイト認証を確かめる（見つかれば作者さん本人の登録にし、新しい編集キーを返す）
+//  POST /api/verify/start    サイト認証を始める（確認用の文字を返す。ほかの作品IDも並べれば、まとめて）
+//  POST /api/verify/check    サイト認証を確かめる（見つかった作品を作者さん本人の登録にし、新しい編集キーを返す。
+//                            作者本人の編集キーを渡せば、新しいキーは作らず、そのキーで直せるようにする）
+//  ※ 作者本人の編集キー：サイト認証が済んだ作品の編集キー。同じ作者名の作品なら、まとめて認証・あとからの登録でも使える
 //  POST /api/report          通報（report.js。だれでも。人数が集まると一時保留）
 //  POST /api/github/webhook  安全の報告の知らせ（security.js。GitHub の署名で確かめる）
 //  /api/admin/…              管理ページ用（admin.js。管理人キーで確かめる）
@@ -13,7 +15,7 @@
 // 管理人・操作の記録・Discord の送り先は、KV（非公開の置き場）に置く。登録などがあると、Discord に知らせる（notify.js）。
 
 import { GitHub } from './github.js';
-import { sha256hex, newKey, normKey, autoApprove, findToken } from './util.js';
+import { sha256hex, newKey, normKey, normText, autoApprove, fetchPageText } from './util.js';
 import { toPublic } from '../../scripts/build.mjs';
 import { UserError, isHttp, str, now, readEntry, saveEntry, clean } from './common.js';
 import { handleAdmin } from './admin.js';
@@ -116,6 +118,32 @@ function publicView(e) {
   const { edit_key_hash, verify, takedown, auto_check, report_hold, ...rest } = e;
   return { ...rest, ...(verify ? { verifying: true } : {}) };
 }
+/**
+ * 作者本人の編集キー：サイト認証が済んだ作品（claim が author）のうち、このキーで直せる作品を探す（作品の一覧は tarball 1回）
+ * @returns {Promise<{hash: string, entries: object[]}>}
+ */
+async function authorKeyEntries(gh, key) {
+  if (!normKey(key)) return { hash: '', entries: [] };
+  const hash = await sha256hex(normKey(key));
+  const files = await gh.snapshot((p) => /^entries\/e\d{5,}\.json$/.test(p));
+  const entries = [];
+  for (const text of files.values()) {
+    try { const e = JSON.parse(text); if (e.claim === 'author' && e.edit_key_hash === hash && e.state !== 'removed') entries.push(e); } catch { /* 読めないものは飛ばす */ }
+  }
+  return { hash, entries };
+}
+/** 作者本人の編集キーが、この作者名の作品に使えるか（認証済みの作品と作者名が同じとき） */
+const keyFitsAuthor = (owned, author) => owned.some((e) => normText(e.author) === normText(author));
+const AUTHOR_KEY_NG = '作者本人の編集キーが違うか、作者名がサイト認証済みの作品と違います（作者名は、認証済みの作品と同じにしてください）';
+/** 作品IDの並び（空白・改行・「、」で区切る。最初の1つ＋ほか。15作品まで） */
+function idList(first, more) {
+  const ids = [...new Set([first, ...String(more || '').split(/[\s、,，]+/)].map((x) => String(x || '').trim().toLowerCase()).filter(Boolean))];
+  for (const id of ids) if (!/^e\d{5,}$/.test(id)) throw new UserError(`作品ID「${id}」が正しくありません（例：e00012）`);
+  if (!ids.length) throw new UserError('作品IDを入れてください');
+  if (ids.length > 15) throw new UserError('まとめて認証できるのは、一度に15作品までです');
+  return ids;
+}
+
 const pagesOf = (e) => [...new Set([...(e.downloads || []).filter((d) => d.kind !== 'direct').map((d) => d.url), ...(e.intro || []).map((i) => i.url), e.site].filter(isHttp))];
 
 // ------------------------------------------------------------ 受付
@@ -124,16 +152,24 @@ async function register(env, gh, f, notify) {
   const entry = entryFromForm(f);
   validate(f, entry);
   checkBlocked(entry, await blocklist(gh));
+  // 作者本人の編集キー（サイト認証が済んだ作品のキー）があれば、サイト認証なしで作者本人の登録にして、同じキーで直せるようにする
+  let owned = null;
+  if (f.claim === 'author' && normKey(f.author_key)) {
+    const { hash, entries } = await authorKeyEntries(gh, f.author_key);
+    if (!keyFitsAuthor(entries, entry.author)) throw new UserError(AUTHOR_KEY_NG, 403);
+    owned = { hash, from: entries[0].id };
+  }
   const auto = await autoApprove(entry);
-  const key = newKey();
+  const key = owned ? '' : newKey();
   const base = {
     ...entry,
     state: auto.ok ? 'public' : 'pending',
-    // 作者さん本人かどうかは、サイト認証で確かめるまで「代理登録」として扱う
-    claim: 'proxy',
-    ...(f.claim === 'author' ? { claim_wish: 'author' } : {}),
+    // 作者さん本人かどうかは、サイト認証（か作者本人の編集キー）で確かめるまで「代理登録」として扱う
+    claim: owned ? 'author' : 'proxy',
+    ...(f.claim === 'author' && !owned ? { claim_wish: 'author' } : {}),
+    ...(owned ? { verified: { at: now(), via: 'author_key', from: owned.from } } : {}),
     registered: now(), changed: now(),
-    edit_key_hash: await sha256hex(normKey(key)),
+    edit_key_hash: owned ? owned.hash : await sha256hex(normKey(key)),
     auto_check: { ok: auto.ok, where: auto.where, at: now() },
   };
   // 作品ID：今ある中でいちばん大きい番号の次。同時に登録されてぶつかったら、次の番号で
@@ -144,9 +180,9 @@ async function register(env, gh, f, notify) {
     const r = await gh.write(`entries/${id}.json`, `${JSON.stringify(clean({ id, ...base }), null, 2)}\n`, `登録：${id} ${entry.name}（${entry.author}）`);
     if (r.ok) {
       const saved = { id, ...base };
-      if (base.state === 'pending') notify('pending', 'pending', saved, f.claim === 'author' ? '作者さん本人としての登録（サイト認証はまだ）' : '代理登録');
+      if (base.state === 'pending') notify('pending', 'pending', saved, owned ? `作者さん本人の登録（作者本人の編集キー：${owned.from} と同じ）` : f.claim === 'author' ? '作者さん本人としての登録（サイト認証はまだ）' : '代理登録');
       else notify('public_new', 'public_new', saved, `確認できたページ：${auto.where}`);
-      return { id, edit_key: key, state: base.state, where: auto.where };
+      return { id, edit_key: key || null, author_key_used: !!owned, state: base.state, where: auto.where };
     }
   }
   throw new UserError('混み合っています。少し待ってから、もう一度お試しください', 503);
@@ -191,24 +227,56 @@ async function takedown(env, gh, f, notify) {
 }
 
 async function verifyStart(env, gh, f) {
-  const { sha, entry } = await readEntry(gh, f.id);
-  if (entry.state === 'removed') throw new UserError('この作品は登録が解除されています');
+  const ids = idList(f.id, f.more_ids);
   const token = `cw-catalog-verify:${newKey(16).replace(/-/g, '').toLowerCase()}`;
-  await saveEntry(gh, { ...entry, verify: { token, until: new Date(Date.now() + 7 * 86400000).toISOString() } }, sha, `サイト認証を始める：${entry.id}`);
-  return { id: entry.id, token, pages: pagesOf(entry) };
+  const until = new Date(Date.now() + 7 * 86400000).toISOString();
+  const got = [];
+  for (const id of ids) got.push({ id, ...(await readEntry(gh, id)) });
+  for (const g of got) if (g.entry.state === 'removed') throw new UserError(`${g.id} は登録が解除されています`);
+  // まとめて認証するときも、確認用コードは1つ（どの作品にも同じコードを置く）
+  for (const g of got) await saveEntry(gh, { ...g.entry, verify: { token, until } }, g.sha, `サイト認証を始める：${g.id}`);
+  return { id: ids[0], ids, token, pages: [...new Set(got.flatMap((g) => pagesOf(g.entry)))] };
 }
 
 async function verifyCheck(env, gh, f, notify) {
-  const { sha, entry } = await readEntry(gh, f.id);
-  const v = entry.verify;
-  if (!v?.token || new Date(v.until) < new Date()) throw new UserError('サイト認証が始まっていないか、期限（7日）が過ぎています。もう一度「確認用コードを発行」を押してください');
-  const where = await findToken(pagesOf(entry), v.token);
-  if (!where) throw new UserError(`確認用コードが、配布ページ・紹介ページ・公式サイトのいずれにも見つかりませんでした。記載してから数分おいて、もう一度お試しください（確認用コード：${v.token}）`);
-  const key = newKey();
-  const { verify, claim_wish, ...rest } = entry;
-  await saveEntry(gh, { ...rest, claim: 'author', verified: { at: now(), where }, edit_key_hash: await sha256hex(normKey(key)), changed: now() }, sha, `サイト認証：${entry.id} ${entry.name}（作者さん本人の登録にしました）`);
-  notify('change', 'verify', entry, `確認できたページ：${where}`);
-  return { id: entry.id, edit_key: key, where };
+  const ids = idList(f.id, f.more_ids);
+  const got = [];
+  for (const id of ids) got.push({ id, ...(await readEntry(gh, id)) });
+  const first = got[0].entry.verify;
+  if (!first?.token || new Date(first.until) < new Date()) throw new UserError('サイト認証が始まっていないか、期限（7日）が過ぎています。もう一度「確認用コードを発行」を押してください');
+  const token = first.token;
+  // 確認用コードを、どのページで見つけたか（作品のページを合わせて、1つずつ1回だけ見に行く）
+  const pages = [...new Set(got.flatMap((g) => pagesOf(g.entry)))].slice(0, 10);
+  const found = new Set();
+  for (const u of pages) { const t = await fetchPageText(u); if (t && t.includes(token)) found.add(u); }
+  if (!found.size) throw new UserError(`確認用コードが、配布ページ・紹介ページ・公式サイトのいずれにも見つかりませんでした。記載してから数分おいて、もう一度お試しください（確認用コード：${token}）`);
+  // 作者本人の編集キー（任意）：あれば新しいキーは作らず、そのキーで直せるようにする
+  let owned = null;
+  if (normKey(f.author_key)) {
+    const { hash, entries } = await authorKeyEntries(gh, f.author_key);
+    if (!entries.length) throw new UserError('作者本人の編集キーが違います（サイト認証が済んだ作品の編集キーを入れてください）', 403);
+    owned = { hash, entries };
+  }
+  const key = owned ? '' : newKey();
+  const hash = owned ? owned.hash : await sha256hex(normKey(key));
+  const done = [], failed = [];
+  for (const g of got) {
+    const v = g.entry.verify;
+    // その作品に登録してあるページのどれかに、コードがあること（ほかの人のページでは認証しない）
+    const where = pagesOf(g.entry).find((u) => found.has(u));
+    if (g.entry.state === 'removed') failed.push({ id: g.id, reason: '登録が解除されています' });
+    else if (v?.token !== token) failed.push({ id: g.id, reason: '確認用コードの発行に入っていません' });
+    else if (!where) failed.push({ id: g.id, reason: 'この作品のページ（配布ページ・紹介ページ・作者さんのサイト）に、確認用コードがありません' });
+    else if (owned && !keyFitsAuthor(owned.entries, g.entry.author)) failed.push({ id: g.id, reason: '作者名が、作者本人の編集キーの作品と違います' });
+    else {
+      const { verify, claim_wish, ...rest } = g.entry;
+      await saveEntry(gh, { ...rest, claim: 'author', verified: { at: now(), where }, edit_key_hash: hash, changed: now() }, g.sha, `サイト認証：${g.id} ${g.entry.name}（作者さん本人の登録にしました）`);
+      notify('change', 'verify', g.entry, `確認できたページ：${where}`);
+      done.push(g.id);
+    }
+  }
+  if (!done.length) throw new UserError(`作者本人の登録にできた作品はありませんでした。${failed.map((x) => `${x.id}：${x.reason}`).join('／')}`);
+  return { id: done[0], ids: done, failed, edit_key: key || null, author_key_used: !!owned, where: [...found][0] };
 }
 
 const ROUTES = {

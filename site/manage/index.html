@@ -56,9 +56,11 @@
     <ol>
       <li>「確認用コードを発行」を押す（作品IDのみで発行可能です）</li>
       <li>発行されたコード（<code>cw-catalog-verify:…</code>）を、配布ページ・紹介ページ・公式サイトのいずれかに記載する</li>
-      <li>「認証を実行」を押す → コードが確認され次第、作者本人の登録へ切り替わり<b>新しい編集キー</b>が発行されます（旧キーは無効化されます）</li>
+      <li>「認証を実行」を押す → コードが確認され次第、作者本人の登録へ切り替わり<b>新しい編集キー</b>が発行されます（旧キーは無効化されます。お持ちの作者本人の編集キーを下に入れたときは、新しいキーは出ず、そのキーで直せるようになります）</li>
     </ol>
     <p>※代理登録された作品の引き継ぎや、編集キー紛失時にご利用いただけます。認証コードは確認完了後に削除して問題ありません。</p>
+    <label class="field">まとめて認証する、ほかの作品の作品ID（任意）<span class="hint">同じ作者さんのほかの作品も、いっしょに作者本人の登録にできます。作品IDを空白か改行で区切って並べてください（例：e00002 e00003）。確認用コードは、それぞれの作品に登録してあるページのどれか（作者さんのサイトなど）に1つ載せれば大丈夫です。一度に15作品まで（上の作品IDと合わせて）</span><textarea id="vids" rows="2" placeholder="e00002 e00003"></textarea></label>
+    <label class="field">お持ちの作者本人の編集キー（任意）<span class="hint">サイト認証が済んだ作品の編集キーを入れると、新しいキーを作らず、そのキーで直せるようにします（作者名が同じ作品だけ）。空なら新しい編集キーを発行します</span><input id="vkey" placeholder="XXXX-XXXX-…" autocomplete="off"></label>
     <p><button class="btn" type="button" id="vstart">確認用コードを発行</button> <button class="btn" type="button" id="vcheck">認証を実行</button></p>
     <p id="vtoken" class="msg" hidden></p>
     <p id="msg-verify" class="msg" hidden></p>
@@ -113,18 +115,26 @@
     done('登録を削除しました（数分で反映されます）。');
   }));
   CW.$('#vstart').addEventListener('click', () => run(CW.$('#msg-verify'), async (done) => {
-    const r = await CW.send('/api/verify/start', { id: id() }, widget);
+    const r = await CW.send('/api/verify/start', { id: id(), more_ids: CW.$('#vids').value }, widget);
     CW.msg(CW.$('#vtoken'), [
       CW.line(`確認用コード：${r.token}　（7日間有効）`),
+      ...((r.ids || []).length > 1 ? [CW.line(`対象の作品：${r.ids.join('、')}`)] : []),
       CW.line('次のいずれかのページに記載してから「認証を実行」を押してください：'),
       ...(r.pages.length ? r.pages.map((u) => CW.line(`・${u}`, 'key')) : [CW.line('（配布ページ・紹介ページ・作者さんのサイトのURLを、先に登録してください）')]),
     ], 'ok');
     done('');
   }));
   CW.$('#vcheck').addEventListener('click', () => run(CW.$('#msg-verify'), async (done) => {
-    const r = await CW.send('/api/verify/check', { id: id() }, widget);
-    CW.$('#key').value = r.edit_key;
-    done([CW.line('作者さん本人の登録にしました。'), ...showKey(r.edit_key)]);
+    const r = await CW.send('/api/verify/check', { id: id(), more_ids: CW.$('#vids').value, author_key: CW.$('#vkey').value.trim() }, widget);
+    const ids = r.ids || [r.id];
+    const failed = (r.failed || []).map((x) => CW.line(`できなかった作品：${x.id}（${x.reason}）`, 'danger'));
+    if (r.edit_key) {
+      CW.$('#key').value = r.edit_key;
+      done([CW.line(`作者さん本人の登録にしました：${ids.join('、')}`), ...failed, ...showKey(r.edit_key), ...(ids.length > 1 ? [CW.line('この編集キーで、上の作品をすべて直せます。これから作品を登録するときも、「作者本人の編集キー」の欄に入れると使えます。')] : [])]);
+    } else {
+      CW.$('#key').value = CW.$('#vkey').value.trim();
+      done([CW.line(`作者さん本人の登録にしました：${ids.join('、')}`), ...failed, CW.line('お持ちの作者本人の編集キーで、これらの作品も直せるようになりました。（新しい編集キーはありません）')]);
+    }
   }));
   CW.$('#takedown').addEventListener('click', () => run(CW.$('#msg-takedown'), async (done) => {
     if (!confirm('掲載停止を申請し、この作品をすぐに非公開にします。よろしいですか？')) { done(''); return; }

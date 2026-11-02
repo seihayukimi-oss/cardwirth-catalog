@@ -34,7 +34,8 @@
         <label><input type="radio" name="claim" value="author"> 作者本人</label>
       </div>
       <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> どの作品も、代理での登録が許可されています（Readme・作者さんのサイトなどで確かめました）</label>
-      <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../../manage/#verify">サイト認証</a>で作品ごとに本人の登録にできます。</p>
+      <label class="field if-author" hidden>作者本人の編集キー（お持ちの方）<span class="hint">サイト認証が済んだ作品の編集キーを入れると、サイト認証なしで作者本人の登録になり、どの作品も同じキーで直せます。（作者名は、認証済みの作品と同じにしてください）</span><input name="author_key" placeholder="XXXX-XXXX-…" autocomplete="off"></label>
+      <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../../manage/#verify">サイト認証</a>で本人の登録にできます（まとめて認証もできます）。作者本人の編集キーを入れたときは、すぐに本人の登録になります。</p>
     </fieldset>
     <fieldset>
       <legend>全部の作品に共通</legend>
@@ -228,6 +229,7 @@
       author: String(fd.get('author') || '').trim(), site: String(fd.get('site') || '').trim(),
       more_urls: String(fd.get('more_urls') || ''), checked: String(fd.get('checked') || ''), checked_note: String(fd.get('checked_note') || ''),
       claim: String(fd.get('claim') || 'proxy'), proxy_ok: !!form.querySelector('[name=proxy_ok]')?.checked,
+      author_key: fd.get('claim') === 'author' ? String(fd.get('author_key') || '').trim() : '',
     };
     const fail = (t) => { CW.msg(msg, t, 'bad'); };
     if (!common.author) return fail('作者名を入れてください');
@@ -257,7 +259,7 @@
           CW.msg(msg, `送っています… ${i + 1} / ${rows.length}件目「${body.name}」（配布ページの確認に、少し時間がかかることがあります）`);
           CW.msg(rmsg, '送っています…');
           const r = await CW.send('/api/register', body, widget);
-          results.push({ name: body.name, id: r.id, key: r.edit_key, state: r.state });
+          results.push({ name: body.name, id: r.id, key: r.edit_key || '（お持ちの作者本人の編集キー）', state: r.state });
           li.remove();
           ok++;
           showResults();

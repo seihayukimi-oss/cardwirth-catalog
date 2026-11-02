@@ -45,13 +45,16 @@ export function toPublic(e, block = { urls: [], hosts: [], authors: [] }) {
   const urls = [...downloads.map((d) => d.url), ...(e.intro || []).map((i) => i?.url || i), e.site].filter(isHttp);
   if (bAuthors.has(norm(author))) return { skip: 'blocked' };
   if (urls.some((u) => bUrls.has(u.toLowerCase()) || [...bHosts].some((h) => hostOf(u) === h || hostOf(u).endsWith(`.${h}`)))) return { skip: 'blocked' };
+  // 動くかどうかの印：登録ページには欄が無いので、空なら形式から決める（クラシックはどれでも、Next仕様は Next だけ、Py仕様は Py だけ）
+  const format = ['classic', 'next', 'wsn', 'none'].includes(e.format) ? e.format : 'classic';
+  const byFormat = { classic: { cw150: 'expected', next: 'expected', py: 'expected' }, next: { cw150: 'no', next: 'expected', py: 'no' }, wsn: { cw150: 'no', next: 'no', py: 'expected' } }[format] || {};
   const out = {
     id: e.id, type: ['scenario', 'skin', 'material'].includes(e.type) ? e.type : 'scenario',
     name, author, version: str(e.version, 50),
     ...(/^\d{4}-\d{2}-\d{2}$/.test(e.updated || '') ? { updated: e.updated } : {}),
-    format: ['classic', 'next', 'wsn', 'none'].includes(e.format) ? e.format : 'classic',
+    format,
     ...(Number.isInteger(e.wsn_version) ? { wsn_version: e.wsn_version } : {}),
-    compat: Object.fromEntries(['cw150', 'next', 'py'].map((k) => [k, ['verified', 'expected', 'no', 'unknown'].includes(e.compat?.[k]) ? e.compat[k] : 'unknown'])),
+    compat: Object.fromEntries(['cw150', 'next', 'py'].map((k) => [k, ['verified', 'expected', 'no'].includes(e.compat?.[k]) ? e.compat[k] : (byFormat[k] || 'unknown')])),
     convert: ['allowed', 'self', 'forbidden'].includes(e.convert) ? e.convert : 'self',
     downloads,
     rating: RATINGS.has(e.rating) ? e.rating : 'all',
@@ -90,9 +93,12 @@ export function buildCatalog(meta, entries, block) {
   const byId = (a, b) => a.id.localeCompare(b.id);
   pub.sort(byId); r18.sort(byId);
   const contentLabels = (Array.isArray(meta.content_labels) ? meta.content_labels : []).filter((d) => d && LABEL_RE.test(d.id || '') && str(d.name, 30)).map((d) => ({ id: d.id, name: str(d.name, 30), ...(str(d.description, 200) ? { description: str(d.description, 200) } : {}) }));
+  // 登録ページの「よく使うタグ」のボタン（管理ページで直せる）
+  const tagPresets = [...new Set((Array.isArray(meta.tag_presets) ? meta.tag_presets : []).map((t) => str(t, 40)).filter((t) => t && !/[、,，\s]/.test(t)))].slice(0, 60);
   const head = {
     format: 1, name: meta.name, attribution: meta.attribution, license: meta.license, links: meta.links,
     ...(contentLabels.length ? { content_labels: contentLabels } : {}),
+    ...(tagPresets.length ? { tag_presets: tagPresets } : {}),
     engines: [], authors: meta.authors || {},
   };
   return { index: { ...head, entries: pub }, r18: { ...head, entries: r18 }, warnings };

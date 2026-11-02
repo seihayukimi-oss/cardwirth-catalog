@@ -34,7 +34,8 @@
         <label><input type="radio" name="claim" value="author"> 作者本人</label>
       </div>
       <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> 代理での登録が許可されている作品です（Readme・作者さんのサイトなどで確かめました）</label>
-      <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../manage/#verify">サイト認証</a>で本人の登録にできます。</p>
+      <label class="field if-author" hidden>作者本人の編集キー（お持ちの方）<span class="hint">サイト認証が済んだ作品の編集キーを入れると、サイト認証なしで作者本人の登録になり、同じキーで直せます。（作者名は、認証済みの作品と同じにしてください）</span><input name="author_key" placeholder="XXXX-XXXX-…" autocomplete="off"></label>
+      <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../manage/#verify">サイト認証</a>で本人の登録にできます。（作者本人の編集キーを入れたときは、すぐに本人の登録になります）</p>
     </fieldset>
     <div id="fields"></div>
     <fieldset>
@@ -77,7 +78,7 @@
     try {
       const r = await CW.send('/api/register', CW.read(form), widget);
       CW.$('#done-id').textContent = r.id;
-      CW.$('#done-key').textContent = r.edit_key;
+      CW.$('#done-key').textContent = r.edit_key || '（お持ちの作者本人の編集キーで直せます。新しい編集キーはありません）';
       CW.$('#done-state').textContent = r.state === 'public'
         ? `配布ページなどで作品名と作者名が確かめられたので、カタログに載せました（数分で反映されます）。`
         : `配布ページなどで作品名と作者名が見つからなかったので、管理人が確かめてから載せます（承認待ち）。`;

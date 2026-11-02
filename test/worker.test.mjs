@@ -3,6 +3,26 @@ import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, createHash } from 'node:crypto';
 import worker from '../worker/src/index.js';
+import { gzipSync } from 'node:zlib';
+
+/** GitHub の tarball のまね（作品の一覧をまとめて読むとき） */
+function makeTarGz(map) {
+  const blocks = [];
+  const header = (name, size, type) => {
+    const h = Buffer.alloc(512);
+    h.write(name, 0, 100); h.write('0000644\0', 100); h.write('0000000\0', 108); h.write('0000000\0', 116);
+    h.write(`${size.toString(8).padStart(11, '0')}\0`, 124); h.write('00000000000\0', 136);
+    h.write('        ', 148); h.write(type, 156); h.write('ustar\0', 257); h.write('00', 263);
+    let sum = 0; for (const x of h) sum += x;
+    h.write(`${sum.toString(8).padStart(6, '0')}\0 `, 148);
+    return h;
+  };
+  const add = (name, body, type = '0') => { const b = Buffer.from(body); blocks.push(header(name, b.length, type), b, Buffer.alloc((512 - (b.length % 512)) % 512)); };
+  add('o-r-0123456/', '', '5');
+  for (const [k, v] of map) add(`o-r-0123456/${k}`, v);
+  blocks.push(Buffer.alloc(1024));
+  return gzipSync(Buffer.concat(blocks));
+}
 
 const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const env = {
@@ -24,6 +44,7 @@ beforeEach(() => {
     const u = String(url);
     if (u.startsWith('https://challenges.cloudflare.com/')) return res(200, { success: init.body.get('response') === 'ok' });
     if (u.endsWith('/access_tokens')) { assert.match(init.headers.Authorization, /^Bearer ey/); return res(201, { token: 't' }); }
+    if (u === 'https://api.github.com/repos/o/r/tarball/main') return new Response(new Uint8Array(makeTarGz(files)), { status: 200, headers: { 'content-type': 'application/x-gzip' } });
     const m = /^https:\/\/api\.github\.com\/repos\/o\/r\/contents\/(.+)$/.exec(u);
     if (m) {
       const path = decodeURI(m[1]);
@@ -118,4 +139,53 @@ test('サイト認証：確認用の文字がページにあれば作者さん�
   assert.equal(e.verify, undefined);
   assert.equal((await call('/api/edit', { ...form, id, key: edit_key })).status, 403, '古いキーは使えない');
   assert.equal((await call('/api/edit', { ...form, id, key: ck.body.edit_key })).status, 200);
+});
+
+test('まとめて認証：作者さんのサイトに確認用コードを1つ載せれば、並べた作品をまとめて作者本人に（同じ編集キー）', async () => {
+  const site = 'https://author.example/';
+  pages.set(site, '<html><body>テスト作者のサイト</body></html>');
+  const a = (await call('/api/register', { ...form, site, claim: 'author' })).body;
+  const b = (await call('/api/register', { ...form, name: 'デバッグ読みシナ', site, claim: 'author' })).body;
+  const c = (await call('/api/register', { ...form, name: 'サンプル店', author: 'ほかの作者', url: 'https://other.example/page.html', claim: 'author', proxy_ok: true })).body;
+  const st = await call('/api/verify/start', { id: a.id, more_ids: `${b.id} ${c.id}` });
+  assert.equal(st.status, 200, JSON.stringify(st.body));
+  assert.deepEqual(st.body.ids, [a.id, b.id, c.id]);
+  pages.set(site, `<html><body>テスト作者のサイト ${st.body.token}</body></html>`);
+  const ck = await call('/api/verify/check', { id: a.id, more_ids: `${b.id}、${c.id}` });
+  assert.equal(ck.status, 200, JSON.stringify(ck.body));
+  assert.deepEqual(ck.body.ids, [a.id, b.id], 'コードのあるページを登録している作品だけ');
+  assert.equal(ck.body.failed[0].id, c.id, 'ほかの人のページしか登録していない作品は認証しない');
+  const ea = JSON.parse(files.get(`entries/${a.id}.json`)), eb = JSON.parse(files.get(`entries/${b.id}.json`));
+  assert.equal(ea.claim, 'author'); assert.equal(eb.claim, 'author');
+  assert.equal(ea.edit_key_hash, eb.edit_key_hash, '同じ編集キーで直せる');
+  assert.equal((await call('/api/edit', { ...form, name: 'デバッグ読みシナ', site, id: b.id, key: ck.body.edit_key })).status, 200);
+  assert.equal(JSON.parse(files.get(`entries/${c.id}.json`)).claim, 'proxy');
+  assert.equal((await call('/api/verify/start', { id: a.id, more_ids: 'x1' })).status, 400, '作品IDの形を確かめる');
+});
+
+test('作者本人の編集キー：あとから登録する作品・まとめて認証でも、同じキーを使える（作者名が同じときだけ）', async () => {
+  const site = 'https://author.example/';
+  pages.set(site, '<html><body>テスト作者のサイト</body></html>');
+  const a = (await call('/api/register', { ...form, site, claim: 'author' })).body;
+  const st = await call('/api/verify/start', { id: a.id });
+  pages.set(site, `<html><body>${st.body.token}</body></html>`);
+  const key = (await call('/api/verify/check', { id: a.id })).body.edit_key;
+  // あとから登録：サイト認証なしで作者本人、同じキー
+  const n = await call('/api/register', { ...form, name: 'デバッグ読みシナ', claim: 'author', author_key: key });
+  assert.equal(n.status, 200, JSON.stringify(n.body));
+  assert.equal(n.body.edit_key, null); assert.equal(n.body.author_key_used, true);
+  const en = JSON.parse(files.get(`entries/${n.body.id}.json`));
+  assert.equal(en.claim, 'author'); assert.equal(en.verified.via, 'author_key'); assert.equal(en.verified.from, a.id);
+  assert.equal((await call('/api/edit', { ...form, name: 'デバッグ読みシナ', id: n.body.id, key })).status, 200);
+  // 作者名が違う・キーが違うときは受け付けない
+  assert.equal((await call('/api/register', { ...form, author: 'ほかの作者', claim: 'author', author_key: key })).status, 403);
+  assert.equal((await call('/api/register', { ...form, claim: 'author', author_key: 'WRONG-KEY' })).status, 403);
+  // まとめて認証で、お持ちのキーを使う（新しいキーは作らない）
+  const p = (await call('/api/register', { ...form, name: 'サンプル店', site, claim: 'author' })).body;
+  const st2 = await call('/api/verify/start', { id: p.id });
+  pages.set(site, `<html><body>${st2.body.token}</body></html>`);
+  const ck = await call('/api/verify/check', { id: p.id, author_key: key });
+  assert.equal(ck.status, 200, JSON.stringify(ck.body));
+  assert.equal(ck.body.edit_key, null);
+  assert.equal((await call('/api/edit', { ...form, name: 'サンプル店', site, id: p.id, key })).status, 200);
 });

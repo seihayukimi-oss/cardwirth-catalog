@@ -108,28 +108,34 @@
     try { const c = JSON.parse(form.dataset.content || '[]'); box.querySelectorAll('[name=content]').forEach((x) => { if (c.includes(x.value)) x.checked = true; }); } catch { /* なし */ }
   }
 
-  /** よく使うタグ（CWカタログが Readme から自動で付けるタグと同じ言葉） */
-  const TAG_PRESETS = ['店シナ', '読み物', '戦闘あり', '戦闘なし', '短編', '中編', '長編', '1人用', '6人専用'];
+  /** よく使うタグ：カタログ（index.json の tag_presets。管理ページで直せる）から読む。読めないときは最初の一覧 */
+  const TAG_PRESETS = ['プライベート店', '読み物', '冒険', '戦闘', '店', 'その他', 'Lv無', 'Lv低', 'Lv中', 'Lv高', '一人用', '二人用', '少人数', '六人用', '短編', '中編', '長編', 'ギャグシナ', 'ホラーシナ', '悪役シナ', '両想い', '片想い', '相棒親友', 'ゴブ洞', '100kb'];
+  const INDEX_URL = new URL('index.json', document.currentScript?.src || location.href).href;
+  let presetsP = null;
+  const tagPresets = () => (presetsP ||= fetch(INDEX_URL, { cache: 'no-cache' }).then((r) => r.json()).then((j) => (Array.isArray(j.tag_presets) && j.tag_presets.length ? j.tag_presets.map(String) : TAG_PRESETS)).catch(() => TAG_PRESETS));
   const splitTags = (v) => String(v || '').split(/[、,，\s]+/).map((t) => t.trim()).filter(Boolean);
   /** タグの欄の下に、押すと付け外しできるボタンを並べる */
   function tagChips(input) {
     const box = document.createElement('div');
     box.className = 'tag-chips';
-    const btns = TAG_PRESETS.map((t) => {
-      const b = Object.assign(document.createElement('button'), { type: 'button', className: 'chip', textContent: t });
-      b.addEventListener('click', () => {
-        const list = splitTags(input.value);
-        input.value = (list.includes(t) ? list.filter((x) => x !== t) : [...list, t]).join('、');
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      });
-      return b;
-    });
+    (input.closest('label') || input).after(box);
+    let btns = [];
     const refresh = () => { const list = splitTags(input.value); btns.forEach((b) => { const on = list.includes(b.textContent); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); };
     input.addEventListener('input', refresh);
     input.addEventListener('change', refresh);
-    box.append(...btns);
-    (input.closest('label') || input).after(box);
-    refresh();
+    tagPresets().then((presets) => {
+      btns = presets.map((t) => {
+        const b = Object.assign(document.createElement('button'), { type: 'button', className: 'chip', textContent: t });
+        b.addEventListener('click', () => {
+          const list = splitTags(input.value);
+          input.value = (list.includes(t) ? list.filter((x) => x !== t) : [...list, t]).join('、');
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        return b;
+      });
+      box.replaceChildren(...btns);
+      refresh();
+    });
   }
 
   const msg = (el, text, kind = '') => {

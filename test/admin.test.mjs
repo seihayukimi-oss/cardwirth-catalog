@@ -170,6 +170,23 @@ test('ラベル：作品のラベルを直す・ラベルの種類を増やす',
   assert.equal((await call('/api/admin/content-labels', { body: { labels: [{ id: 'a', name: 'x' }, { id: 'a', name: 'y' }] } })).status, 400);
 });
 
+test('タグ：作品のタグを直す・よく使うタグを直す', async () => {
+  await register();
+  // タグを送らなければ今のまま、送れば直す（区切りはそろえる）
+  assert.equal((await call('/api/admin/labels', { body: { id: 'e00001', rating: 'all', content: [], tags: 'テスト冒険、短編  短編' } })).status, 200);
+  assert.deepEqual(JSON.parse(files.get('entries/e00001.json')).tags, ['テスト冒険', '短編']);
+  assert.equal((await call('/api/admin/labels', { body: { id: 'e00001', rating: 'r15', content: [] } })).status, 200);
+  assert.deepEqual(JSON.parse(files.get('entries/e00001.json')).tags, ['テスト冒険', '短編'], '送らなければ今のまま');
+  assert.match((await call('/api/admin/log', { method: 'GET' })).body.items[1].detail, /／タグ：テスト冒険、短編$/);
+  // よく使うタグ
+  const r = await call('/api/admin/tag-presets', { body: { tags: ['短編', '読み物', '短編', ''] } });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.deepEqual(JSON.parse(files.get('catalog.json')).tag_presets, ['短編', '読み物']);
+  assert.equal(JSON.parse(files.get('catalog.json')).name, 'テスト', 'ほかの項目はそのまま');
+  assert.equal((await call('/api/admin/tag-presets', { body: { tags: ['短編、読み物'] } })).status, 400, '区切りの文字は入れられない');
+  assert.deepEqual((await call('/api/admin/entries', { method: 'GET' })).body.tag_presets, ['短編', '読み物']);
+});
+
 test('ブロックリスト：足す・まとめて直す（形のおかしいものは捨てる）', async () => {
   const r = await call('/api/admin/blocklist', { body: { add: { hosts: ['https://Bad.Example/path'], authors: ['いたずら'] } } });
   assert.equal(r.status, 200, JSON.stringify(r.body));

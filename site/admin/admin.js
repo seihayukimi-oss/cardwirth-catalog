@@ -12,11 +12,11 @@
   const DL_STATUS = { active: '現役', mirror: '予備', old: '旧（移転前）', closed: '終了' };
   const DL_KIND = { page: '配布ページ', direct: '直接のリンク', list: 'ファイル一覧' };
   const TYPE = { scenario: 'シナリオ', skin: 'スキン', material: '素材' };
-  const ACTION = { approve: '承認', state: '状態の変更', labels: 'ラベルの直し', 'label-types': 'ラベルの種類', blocklist: 'ブロックリスト', settings: '自分の設定', 'admin-add': '副管理人の追加', 'admin-remove': '副管理人を外す', 'admin-rekey': 'キーの作り直し', 'report-hold': '通報で一時保留', 'report-clear': '通報を片付ける' };
+  const ACTION = { approve: '承認', state: '状態の変更', labels: 'ラベル・タグの直し', 'label-types': 'ラベルの種類', 'tag-presets': 'よく使うタグ', blocklist: 'ブロックリスト', settings: '自分の設定', 'admin-add': '副管理人の追加', 'admin-remove': '副管理人を外す', 'admin-rekey': 'キーの作り直し', 'report-hold': '通報で一時保留', 'report-clear': '通報を片付ける' };
   const REASON = { r18: '年齢区分の不備', unauthorized: '無断転載・改変・作者の意向', abuse: '危険なファイル・不適切', link: 'リンク切れ・配布先の不備', other: 'その他' };
   const FILTERS = ['pending', 'reported', 'held', 'public', 'private', 'removed', 'all'];
 
-  const S = { key: '', me: null, events: [], entries: [], reports: {}, labels: [], block: null, filter: 'pending', logCursor: null };
+  const S = { key: '', me: null, events: [], entries: [], reports: {}, labels: [], tagPresets: [], block: null, filter: 'pending', logCursor: null };
 
   /** 要素を作る（子は文字か要素。文字は textContent で入れる） */
   function h(tag, attrs = {}, ...kids) {
@@ -138,7 +138,7 @@
     $$('.tabs [data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
     $$('.pane').forEach((p) => { p.hidden = p.id !== `pane-${name}`; });
     msg($('#app-msg'), '');
-    if (name === 'labels') renderLabels();
+    if (name === 'labels') { renderLabels(); renderTagPresets(); }
     if (name === 'block') renderBlock();
     if (name === 'admins') loadAdmins();
     if (name === 'log') loadLog(true);
@@ -150,7 +150,7 @@
     box.replaceChildren(h('p', { class: 'muted' }, '読み込んでいます…'));
     try {
       const r = await api('/api/admin/entries');
-      S.entries = r.entries; S.reports = r.reports || {}; S.labels = r.labels; S.block = r.blocklist;
+      S.entries = r.entries; S.reports = r.reports || {}; S.labels = r.labels; S.tagPresets = r.tag_presets || []; S.block = r.blocklist;
       renderEntries();
     } catch (e) { box.replaceChildren(h('p', { class: 'msg bad' }, e.message)); }
   }
@@ -212,7 +212,7 @@
     if (e.takedown) row('掲載停止の申請', h('b', {}, e.takedown.reason || '（理由なし）'), h('span', { class: 'muted' }, `（${when(e.takedown.at)}・申請の前は${STATE[e.takedown.from] || e.takedown.from || '？'}）`));
     if (state === 'held' && e.held_reason) row('一時保留の理由', e.held_reason, e.report_hold ? h('span', { class: 'muted' }, `（通報で自動：${REASON[e.report_hold.reason] || e.report_hold.reason} ${e.report_hold.count}人・${when(e.report_hold.at)}）`) : '');
     if (reportCount(e.id)) row('通報', Object.entries(S.reports[e.id]).map(([k, n]) => `${REASON[k] || k} ${n}人`).join('・'));
-    if (e.verified) row('サイト認証', link(e.verified.where), h('span', { class: 'muted' }, `（${when(e.verified.at)}）`));
+    if (e.verified) row('サイト認証', e.verified.via === 'author_key' ? `作者本人の編集キーで登録（${e.verified.from || ''} と同じキー）` : link(e.verified.where), h('span', { class: 'muted' }, `（${when(e.verified.at)}）`));
     if (e.verify) row('サイト認証', `手続き中（${when(e.verify.until)} まで）`);
     if ((e.tags || []).length) row('タグ', e.tags.join('、'));
     if (e.description) row('紹介文', h('span', { class: 'pre' }, e.description));
@@ -253,18 +253,20 @@
     if (state !== 'held') card.append(reason);
 
     // ラベルを直す
-    const lab = h('details', { class: 'sub' }, h('summary', {}, 'シナリオラベルを直す'));
+    const lab = h('details', { class: 'sub' }, h('summary', {}, 'シナリオラベル・タグを直す'));
     const rating = h('div', { class: 'choices' }, ...Object.entries(RATING).map(([v, n]) => h('label', {}, h('input', { type: 'radio', name: `rating-${e.id}`, value: v, checked: (e.rating || 'all') === v }), ` ${n}`)));
     const boxes = h('div', { class: 'choices' }, ...S.labels.map((l) => h('label', { title: l.description || '' }, h('input', { type: 'checkbox', value: l.id, checked: (e.content || []).includes(l.id) }), ` ${l.name}`)));
-    lab.append(h('div', { class: 'field' }, '対象年齢', rating), h('div', { class: 'field' }, '注意ラベル', boxes), h('p', {}, h('button', {
+    const tagIn = h('input', { class: 'tags-in', maxlength: '400', value: (e.tags || []).join('、'), placeholder: '「、」で区切る（例：短編、読み物）' });
+    lab.append(h('div', { class: 'field' }, '対象年齢', rating), h('div', { class: 'field' }, '注意ラベル', boxes),
+      h('div', { class: 'field' }, 'タグ', tagIn, tagChips(tagIn)), h('p', {}, h('button', {
       type: 'button', class: 'btn small',
       onclick: (ev) => act(ev.currentTarget, async () => {
-        const r = await api('/api/admin/labels', { id: e.id, rating: $(`input[name="rating-${e.id}"]:checked`, lab)?.value, content: $$('input[type=checkbox]:checked', boxes).map((x) => x.value) });
-        e.rating = r.rating; e.content = r.content;
+        const r = await api('/api/admin/labels', { id: e.id, rating: $(`input[name="rating-${e.id}"]:checked`, lab)?.value, content: $$('input[type=checkbox]:checked', boxes).map((x) => x.value), tags: tagIn.value });
+        e.rating = r.rating; e.content = r.content; e.tags = r.tags;
         setTimeout(renderEntries, 1200);
-        return 'ラベルを直しました（数分でカタログに反映されます）';
+        return 'ラベル・タグを直しました（数分でカタログに反映されます）';
       }),
-    }, 'ラベルを保存')));
+    }, 'ラベル・タグを保存')));
     card.append(lab);
 
     // ブロック
@@ -308,6 +310,42 @@
     card.append(blk, box);
     return card;
   }
+
+  // ------------------------------------------------------------ タグ
+  const splitTags = (v) => String(v || '').split(/[、,，\s]+/).map((t) => t.trim()).filter(Boolean);
+  /** タグの欄の下に並べる、よく使うタグのボタン（押すと付け外し） */
+  function tagChips(input) {
+    const btns = S.tagPresets.map((t) => h('button', { type: 'button', class: 'chip', onclick: () => {
+      const list = splitTags(input.value);
+      input.value = (list.includes(t) ? list.filter((x) => x !== t) : [...list, t]).join('、');
+      refresh();
+    } }, t));
+    const refresh = () => { const list = splitTags(input.value); btns.forEach((b) => { const on = list.includes(b.textContent); b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }); };
+    input.addEventListener('input', refresh);
+    refresh();
+    return h('div', { class: 'tag-chips' }, ...btns);
+  }
+  /** よく使うタグ（登録ページのボタン）：1行に1つ。上下で並べ替え */
+  function renderTagPresets() {
+    $('#tagp-list').replaceChildren(...S.tagPresets.map((t) => tagPresetRow(t)));
+  }
+  function tagPresetRow(t = '') {
+    const li = h('li', { class: 'tagp-row' },
+      h('input', { class: 'tagp-name', maxlength: '40', value: t, 'aria-label': 'タグの名前' }),
+      h('button', { type: 'button', class: 'btn small ghost', 'aria-label': '上へ', onclick: () => { li.previousElementSibling?.before(li); } }, '↑'),
+      h('button', { type: 'button', class: 'btn small ghost', 'aria-label': '下へ', onclick: () => { li.nextElementSibling?.after(li); } }, '↓'),
+      h('button', { type: 'button', class: 'btn small ghost', onclick: () => li.remove() }, '消す'));
+    return li;
+  }
+  $('#tagp-add').addEventListener('click', () => { const li = tagPresetRow(); $('#tagp-list').append(li); li.querySelector('input').focus(); });
+  $('#tagp-save').addEventListener('click', (ev) => run(ev.currentTarget, $('#tagp-msg'), async () => {
+    const tags = $$('#tagp-list .tagp-name').map((x) => x.value.trim()).filter(Boolean);
+    const r = await api('/api/admin/tag-presets', { tags });
+    S.tagPresets = r.tag_presets;
+    renderTagPresets();
+    renderEntries();
+    return 'よく使うタグを保存しました（数分で、登録ページのボタンに反映されます）';
+  }));
 
   // ------------------------------------------------------------ ラベルの種類
   function renderLabels() {

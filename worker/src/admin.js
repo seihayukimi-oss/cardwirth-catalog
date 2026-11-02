@@ -7,7 +7,7 @@
 // ・KV（非公開の置き場）に置くもの：
 //     admins       … 管理人の名前・キーの指紋・Discord の送り先・知らせる出来事
 //     log:…        … 操作の記録（だれが・いつ・何を）。400日で消える
-// ・作品の状態・ラベル・ブロックリスト・ラベルの種類は、これまでどおりリポジトリに書く（コミットの文に管理人の名前は入れない）
+// ・作品の状態・ラベル・タグ・ブロックリスト・ラベルの種類・よく使うタグは、これまでどおりリポジトリに書く（コミットの文に管理人の名前は入れない）
 
 import { UserError, LABEL_RE, STATE_NAMES, str, now, isHttp, readEntry, saveEntry, readJson, addLog, sameHex } from './common.js';
 import { reportSummary, reportDetails, clearReports } from './report.js';
@@ -74,6 +74,7 @@ async function listEntries(env, gh) {
     entries,
     reports: await reportSummary(env),
     labels: mergedLabels(catalog.content_labels),
+    tag_presets: cleanTagPresets(catalog.tag_presets),
     blocklist: normBlock(parse('blocklist.json', {})),
   };
 }
@@ -94,18 +95,41 @@ async function setState(env, gh, f, me) {
   return { id: entry.id, state: f.state };
 }
 
+/** タグ（「、」などで区切った文字か、配列）を、登録と同じ形（30個まで・1つ40文字まで）にそろえる */
+export const cleanTags = (v) => [...new Set((Array.isArray(v) ? v : String(v || '').split(/[、,，\s]+/)).map((t) => str(t, 40)).filter(Boolean))].slice(0, 30);
+
 async function setLabels(env, gh, f, me) {
   if (!['all', 'r15', 'r18'].includes(f.rating)) throw new UserError('対象年齢（全年齢・R15・R18）を選んでください');
   const content = [...new Set((Array.isArray(f.content) ? f.content : []).filter((c) => LABEL_RE.test(c)))].slice(0, 20);
   const { sha, entry } = await readEntry(gh, f.id);
-  const same = (entry.rating || 'all') === f.rating && JSON.stringify([...(entry.content || [])].sort()) === JSON.stringify([...content].sort());
-  if (same) return { id: entry.id, rating: f.rating, content };
-  await saveEntry(gh, { ...entry, rating: f.rating, content, changed: now() }, sha, `管理：${entry.id} シナリオラベルを直す`);
+  // タグは、送られてきたときだけ直す（送られてこなければ今のまま）
+  const tags = f.tags === undefined ? (entry.tags || []) : cleanTags(f.tags);
+  const tagsChanged = JSON.stringify(entry.tags || []) !== JSON.stringify(tags);
+  const same = (entry.rating || 'all') === f.rating && JSON.stringify([...(entry.content || [])].sort()) === JSON.stringify([...content].sort()) && !tagsChanged;
+  if (same) return { id: entry.id, rating: f.rating, content, tags };
+  await saveEntry(gh, { ...entry, rating: f.rating, content, tags, changed: now() }, sha, `管理：${entry.id} シナリオラベル・タグを直す`);
   const rn = { all: '全年齢', r15: 'R15', r18: 'R18' };
   // 記録には、ラベルの ID ではなく名前を書く（増やしたラベルの名前は catalog.json から）
   const names = new Map(mergedLabels((await readJson(gh, 'catalog.json', {}).catch(() => ({ data: {} }))).data.content_labels).map((l) => [l.id, l.name]));
-  await addLog(env, me, 'labels', entry.id, `${entry.name}：${rn[entry.rating || 'all']}→${rn[f.rating]}${content.length ? `・${content.map((c) => names.get(c) || c).join('・')}` : ''}`);
-  return { id: entry.id, rating: f.rating, content };
+  await addLog(env, me, 'labels', entry.id, `${entry.name}：${rn[entry.rating || 'all']}→${rn[f.rating]}${content.length ? `・${content.map((c) => names.get(c) || c).join('・')}` : ''}${tagsChanged ? `／タグ：${tags.join('、') || '（なし）'}` : ''}`);
+  return { id: entry.id, rating: f.rating, content, tags };
+}
+
+// ------------------------------------------------------------ よく使うタグ（登録ページのボタン）
+/** catalog.json の tag_presets をそろえる（60個まで・1つ40文字まで・重なりなし） */
+export const cleanTagPresets = (v) => [...new Set((Array.isArray(v) ? v : []).map((t) => str(t, 40)).filter((t) => t && !/[、,，\s]/.test(t)))].slice(0, 60);
+
+async function setTagPresets(env, gh, f, me) {
+  const list = Array.isArray(f.tags) ? f.tags : [];
+  if (list.length > 60) throw new UserError('よく使うタグは60個までです');
+  for (const t of list) if (/[、,，\s]/.test(String(t || '').trim())) throw new UserError(`タグ「${t}」に、区切りの文字（「、」・空白など）が入っています`);
+  const out = cleanTagPresets(list);
+  const { sha, data } = await readJson(gh, 'catalog.json', {});
+  if (JSON.stringify(cleanTagPresets(data.tag_presets)) === JSON.stringify(out)) return { tag_presets: out };
+  const r = await gh.write('catalog.json', `${JSON.stringify({ ...data, tag_presets: out }, null, 2)}\n`, '管理：よく使うタグを直す', sha);
+  if (!r.ok) throw new UserError('ほかの変更と重なりました。読み込み直してから、もう一度お試しください', 409);
+  await addLog(env, me, 'tag-presets', '', out.join('、') || '（なし）');
+  return { tag_presets: out };
 }
 
 // ------------------------------------------------------------ ラベルの種類・ブロックリスト
@@ -252,6 +276,7 @@ const ROUTES = {
   'POST /api/admin/state': ({ env, gh, f, me }) => setState(env, gh, f, me),
   'POST /api/admin/labels': ({ env, gh, f, me }) => setLabels(env, gh, f, me),
   'POST /api/admin/content-labels': ({ env, gh, f, me }) => setContentLabels(env, gh, f, me),
+  'POST /api/admin/tag-presets': ({ env, gh, f, me }) => setTagPresets(env, gh, f, me),
   'POST /api/admin/blocklist': ({ env, gh, f, me }) => setBlocklist(env, gh, f, me),
   'GET /api/admin/admins': async ({ me, admins }) => {
     ownerOnly(me);

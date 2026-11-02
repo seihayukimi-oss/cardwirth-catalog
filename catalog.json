@@ -1,7 +1,10 @@
 {
   "format": 1,
   "name": "CardWirth 共用カタログ",
-  "attribution": { "name": "CardWirth 共用カタログ", "url": "https://seihayukimi-oss.github.io/cardwirth-catalog/" },
+  "attribution": {
+    "name": "CardWirth 共用カタログ",
+    "url": "https://seihayukimi-oss.github.io/cardwirth-catalog/"
+  },
   "license": "CC0-1.0",
   "links": {
     "register": "https://seihayukimi-oss.github.io/cardwirth-catalog/register/",
@@ -9,5 +12,32 @@
     "report": "https://seihayukimi-oss.github.io/cardwirth-catalog/report/"
   },
   "content_labels": [],
+  "tag_presets": [
+    "プライベート店",
+    "読み物",
+    "冒険",
+    "戦闘",
+    "店",
+    "その他",
+    "Lv無",
+    "Lv低",
+    "Lv中",
+    "Lv高",
+    "一人用",
+    "二人用",
+    "少人数",
+    "六人用",
+    "短編",
+    "中編",
+    "長編",
+    "ギャグシナ",
+    "ホラーシナ",
+    "悪役シナ",
+    "両想い",
+    "片想い",
+    "相棒親友",
+    "ゴブ洞",
+    "100kb"
+  ],
   "authors": {}
 }

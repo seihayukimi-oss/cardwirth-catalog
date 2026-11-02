@@ -69,6 +69,10 @@ button.link { background: none; border: 0; padding: 0; color: var(--accent); tex
 .chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .chip.attention:not(.on) { border-color: #9a5a12; color: #9a5a12; font-weight: 600; }
 .tag-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 12px; }
+.field .tag-chips { margin: 6px 0 0; }
+.tagp-list { padding-left: 1.6em; margin: 8px 0; }
+.tagp-row { display: flex; gap: 6px; align-items: center; margin: 4px 0; }
+.tagp-row .tagp-name { flex: 1; max-width: 18em; font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
 .search .btn { white-space: nowrap; }
 .search { display: flex; gap: 6px; align-items: center; flex: 1 1 260px; max-width: 420px; }
 .search input, .reason, table.grid input { font: inherit; padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); width: 100%; min-width: 0; }

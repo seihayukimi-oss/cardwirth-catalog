@@ -35,6 +35,20 @@ test('配る形：管理用の項目は出さない・状態・R18は別のフ�
   assert.deepEqual(index.content_labels.map((d) => d.id), ['utsu']);
 });
 
+test('動くかどうかの印：空なら形式から決める（書いてあればそれを使う）', () => {
+  assert.deepEqual(toPublic({ ...base, format: 'classic' }).entry.compat, { cw150: 'expected', next: 'expected', py: 'expected' });
+  assert.deepEqual(toPublic({ ...base, format: 'next' }).entry.compat, { cw150: 'no', next: 'expected', py: 'no' });
+  assert.deepEqual(toPublic({ ...base, format: 'wsn' }).entry.compat, { cw150: 'no', next: 'no', py: 'expected' });
+  assert.deepEqual(toPublic({ ...base, format: 'none' }).entry.compat, { cw150: 'unknown', next: 'unknown', py: 'unknown' });
+  assert.deepEqual(toPublic({ ...base, format: 'classic', compat: { cw150: 'verified', next: 'no' } }).entry.compat, { cw150: 'verified', next: 'no', py: 'expected' });
+});
+
+test('よく使うタグ：catalog.json の tag_presets を index.json に出す（区切りの文字が入ったものは捨てる）', () => {
+  const r = buildCatalog({ ...meta, tag_presets: ['短編', '読み物、x', '短編', '冒険'] }, [{ file: 'e00001.json', data: base }], block);
+  assert.deepEqual(r.index.tag_presets, ['短編', '冒険']);
+  assert.equal(buildCatalog(meta, [{ file: 'e00001.json', data: base }], block).index.tag_presets, undefined);
+});
+
 test('meta.json：ツールと同じ指紋の取り方・コミットを固定した jsDelivr の写し', () => {
   const { index, r18 } = buildCatalog(meta, [{ file: 'a', data: base }], block);
   const t = JSON.stringify(index), t2 = JSON.stringify(r18);
