@@ -41,6 +41,9 @@ button.btn:disabled { opacity: .6; cursor: wait; }
 .msg.ok { border-left-color: #2f6f45; }
 .msg.bad { border-left-color: #a13434; }
 .msg.warn { border-left-color: #9a5a12; }
+.msg-line.key { font-family: ui-monospace, Consolas, monospace; font-size: .92em; word-break: break-all; }
+.msg-line.danger { color: #c0392b; font-weight: 700; }
+@media (prefers-color-scheme: dark) { .msg-line.danger { color: #ff7b72; } }
 .keys { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; }
 .keys dd { margin: 0; }
 [hidden] { display: none !important; }

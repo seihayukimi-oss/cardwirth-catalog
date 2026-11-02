@@ -132,9 +132,16 @@
     refresh();
   }
 
-  const msg = (el, text, kind = '') => { el.className = `msg ${kind}`; el.textContent = text; el.hidden = !text; };
+  const msg = (el, text, kind = '') => {
+    el.className = `msg ${kind}`;
+    // 行ごとに分けて出したいときは、要素の配列を渡す（中の文字は textContent で入れるので、HTML としては読まれない）
+    if (Array.isArray(text)) el.replaceChildren(...text); else el.textContent = text;
+    el.hidden = Array.isArray(text) ? !text.length : !text;
+  };
+  /** msg に渡す1行（cls：key＝キーや URL、danger＝赤い字） */
+  const line = (text, cls = '') => { const d = document.createElement('div'); if (cls) d.className = `msg-line ${cls}`; d.textContent = text; return d; };
 
-  window.CW = { $, LABELS, send, get, turnstile, read, fill, wire, msg, tagChips };
+  window.CW = { $, LABELS, send, get, turnstile, read, fill, wire, msg, line, tagChips };
 })();
 
 // 作品の入力欄（登録ページと直すページで同じもの）

@@ -93,7 +93,8 @@
     if (text) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   };
   const run = async (box, fn) => { try { say(box, '送っています…'); await fn((t, k = 'ok') => say(box, t, k)); } catch (e) { say(box, e.message, 'bad'); } };
-  const showKey = (k) => `新しい編集キー：${k}　⚠ 二度と表示されません。必ず控えてください。`;
+  // 新しい編集キー：行を分けて、注意は赤い字で出す
+  const showKey = (k) => [CW.line('新しい編集キー：'), CW.line(k, 'key'), CW.line('⚠ 二度と表示されません。必ず控えてください。', 'danger')];
   const st = (s) => ({ public: '公開中', pending: '承認待ち', held: '一時保留中', private: '非公開', removed: '登録解除ずみ' }[s] || s);
 
   CW.$('#load').addEventListener('click', () => run(CW.$('#msg-load'), async (done) => {
@@ -113,13 +114,17 @@
   }));
   CW.$('#vstart').addEventListener('click', () => run(CW.$('#msg-verify'), async (done) => {
     const r = await CW.send('/api/verify/start', { id: id() }, widget);
-    CW.msg(CW.$('#vtoken'), `確認用コード：${r.token}　（7日間有効）。次のいずれかのページに記載してから「認証を実行」を押してください：${r.pages.join('、') || '（配布ページ・紹介ページ・作者さんのサイトのURLを、先に登録してください）'}`, 'ok');
+    CW.msg(CW.$('#vtoken'), [
+      CW.line(`確認用コード：${r.token}　（7日間有効）。`),
+      CW.line('次のいずれかのページに記載してから「認証を実行」を押してください：'),
+      ...(r.pages.length ? r.pages.map((u) => CW.line(`・${u}`, 'key')) : [CW.line('（配布ページ・紹介ページ・作者さんのサイトのURLを、先に登録してください）')]),
+    ], 'ok');
     done('');
   }));
   CW.$('#vcheck').addEventListener('click', () => run(CW.$('#msg-verify'), async (done) => {
     const r = await CW.send('/api/verify/check', { id: id() }, widget);
     CW.$('#key').value = r.edit_key;
-    done(`作者さん本人の登録にしました。${showKey(r.edit_key)}`);
+    done([CW.line('作者さん本人の登録にしました。'), ...showKey(r.edit_key)]);
   }));
   CW.$('#takedown').addEventListener('click', () => run(CW.$('#msg-takedown'), async (done) => {
     if (!confirm('掲載停止を申請し、この作品をすぐに非公開にします。よろしいですか？')) { done(''); return; }
