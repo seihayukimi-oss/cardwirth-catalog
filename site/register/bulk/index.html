@@ -31,9 +31,8 @@
       <legend>全部の作品に共通</legend>
       <label class="field"><b class="req">必須</b> 作者名<span class="hint">作者名またはサークル名（※代理登録の場合、登録者ではなく原作者名を入力してください）</span><input name="author" required maxlength="200"></label>
       <label class="field">作者さんのサイト<input name="site" type="url" placeholder="https://"></label>
-      <label class="field">紹介ページ<span class="hint">作者さんの紹介ページ・X・Misskey など。全部の作品に入れます。1行に1つ</span><textarea name="intro" rows="2"></textarea></label>
       <label class="field">予備の配布URL<span class="hint">作者さんの配布ページなど、全部の作品の予備として入れます。1行に1つ。「名前 | URL」とも書けます</span><textarea name="more_urls" rows="2"></textarea></label>
-      <label class="field"><b class="req">必須</b> 情報元・確認方法<span class="hint">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span>
+      <label class="field"><b class="req">必須</b> 情報元・確認方法<span class="hint if-not-author">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span><span class="hint if-author" hidden>作者本人が登録するときは、ほかの人も確かめられる場所（Readme・作者公式サイト・配布ページなど）を選んでください。（後から変更可能です）</span>
         <select name="checked" required><option value="">選んでください</option><option value="readme">Readme</option><option value="site">作者公式サイト・配布ページ</option><option value="author">作者本人へ直接確認</option><option value="other">その他</option></select></label>
       <label class="field">補足<input name="checked_note" maxlength="300" placeholder="例：Readmeの「再配布について」の項目"></label>
     </fieldset>
@@ -96,6 +95,7 @@
         <label class="field">URLの種類
           <select data-k="url_kind"><option value="page">配布ページ</option><option value="direct">zipなどへの直接のリンク</option><option value="list">ファイル一覧（アップローダーの一覧ページ）</option></select></label>
       </div>
+      <label class="field">紹介ページ<span class="hint">この作品の紹介ページ・X・Misskey の告知など。1行に1つ</span><textarea data-k="intro" rows="2"></textarea></label>
       <div class="field"><b class="req">必須</b> 対象年齢
         <div class="choices rating">
           <label><input type="radio" value="all"> 全年齢</label>
@@ -156,7 +156,12 @@
   CW.$('#add').addEventListener('click', () => addRow()?.querySelector('[data-k=name]').focus());
 
   // 代理登録のときだけ、許可のチェックを出す
-  const updClaim = () => { form.querySelectorAll('.if-proxy').forEach((x) => { x.hidden = form.querySelector('[name=claim]:checked')?.value === 'author'; }); };
+  const updClaim = () => {
+    const author = form.querySelector('[name=claim]:checked')?.value === 'author';
+    form.querySelectorAll('.if-proxy, .if-not-author').forEach((x) => { x.hidden = author; });
+    // 作者本人の登録のときは、ほかの人も確かめられる場所を選んでもらう
+    form.querySelectorAll('.if-author').forEach((x) => { x.hidden = !author; });
+  };
   form.addEventListener('change', updClaim);
   updClaim();
 
@@ -181,7 +186,7 @@
       moved_url: v('moved_url'), moved_kind: 'page', moved_label: '',
       rating: li.querySelector('.rating input:checked')?.value || '',
       content: [...li.querySelectorAll('.label-choices input:checked')].map((c) => c.value),
-      tags: v('tags'), description: v('description'),
+      intro: v('intro'), tags: v('tags'), description: v('description'),
       derivative: 'no', derivative_of: '', derivative_basis: '',
     };
   }
@@ -219,7 +224,7 @@
     ev.preventDefault();
     const fd = new FormData(form);
     const common = {
-      author: String(fd.get('author') || '').trim(), site: String(fd.get('site') || '').trim(), intro: String(fd.get('intro') || ''),
+      author: String(fd.get('author') || '').trim(), site: String(fd.get('site') || '').trim(),
       more_urls: String(fd.get('more_urls') || ''), checked: String(fd.get('checked') || ''), checked_note: String(fd.get('checked_note') || ''),
       claim: String(fd.get('claim') || 'proxy'), proxy_ok: !!form.querySelector('[name=proxy_ok]')?.checked,
     };

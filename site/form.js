@@ -74,6 +74,9 @@
       form.querySelectorAll('.if-derivative').forEach((x) => { x.hidden = !der; });
       const claim = form.querySelector('[name=claim]:checked')?.value;
       form.querySelectorAll('.if-proxy').forEach((x) => { x.hidden = claim === 'author'; });
+      // 作者本人の登録のときは、ほかの人も確かめられる場所を選んでもらう
+      form.querySelectorAll('.if-author').forEach((x) => { x.hidden = claim !== 'author'; });
+      form.querySelectorAll('.if-not-author').forEach((x) => { x.hidden = claim === 'author'; });
       form.querySelectorAll('.if-list').forEach((x) => { x.hidden = form.querySelector('[name=url_kind]')?.value !== 'list'; });
     };
     form.addEventListener('change', upd);
@@ -165,7 +168,7 @@ window.CW.fieldsHtml = `
 
 <fieldset>
   <legend>確かめたこと</legend>
-  <label class="field"><b class="req">必須</b> 情報元・確認方法<span class="hint">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span>
+  <label class="field"><b class="req">必須</b> 情報元・確認方法<span class="hint if-not-author">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span><span class="hint if-author" hidden>作者本人が登録するときは、ほかの人も確かめられる場所（Readme・作者公式サイト・配布ページなど）を選んでください。（後から変更可能です）</span>
     <select name="checked" required><option value="">選んでください</option><option value="readme">Readme</option><option value="site">作者公式サイト・配布ページ</option><option value="author">作者本人へ直接確認</option><option value="other">その他</option></select></label>
   <label class="field">補足<input name="checked_note" maxlength="300" placeholder="例：Readmeの「再配布について」の項目"></label>
   <div class="field">改変版ですか？
