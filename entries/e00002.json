@@ -1,0 +1,40 @@
+{
+  "id": "e00002",
+  "type": "scenario",
+  "name": "レッツ炭鉱！！",
+  "author": "清葉雪見",
+  "version": "1.0.0",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/seiha_yukimiCW/download/3",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://seesaawiki.jp/seihayukimicw/",
+  "intro": [
+    {
+      "url": "https://seesaawiki.jp/seihayukimicw/d/%a5%ec%a5%c3%a5%c4%c3%ba%b9%db%a1%aa%a1%aa"
+    }
+  ],
+  "tags": [
+    "戦闘あり",
+    "金策",
+    "100KB祭り"
+  ],
+  "rating": "all",
+  "checked": "readme",
+  "state": "public",
+  "claim": "proxy",
+  "claim_wish": "author",
+  "registered": "2026-11-02T14:26:12.381Z",
+  "changed": "2026-11-02T14:26:12.381Z",
+  "edit_key_hash": "07c00d9a72fa7aabd995834a4fb77a7fcf78b4f57f48bf17cd251d55c6946161",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/seiha_yukimiCW/download/3",
+    "at": "2026-11-02T14:26:12.381Z"
+  }
+}
