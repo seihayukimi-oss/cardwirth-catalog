@@ -1,0 +1,40 @@
+{
+  "id": "e00006",
+  "type": "scenario",
+  "name": "水の都アムール・ランフィニ",
+  "author": "清葉雪見",
+  "version": "1.0.2",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/seiha_yukimiCW/download/17",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://seesaawiki.jp/seihayukimicw/",
+  "intro": [
+    {
+      "url": "https://seesaawiki.jp/seihayukimicw/d/%bf%e5%a4%ce%c5%d4%a5%a2%a5%e0%a1%bc%a5%eb%a1%a6%a5%e9%a5%f3%a5%d5%a5%a3%a5%cb"
+    }
+  ],
+  "tags": [
+    "中編",
+    "読み物",
+    "2人用"
+  ],
+  "rating": "all",
+  "checked": "readme",
+  "state": "public",
+  "claim": "proxy",
+  "claim_wish": "author",
+  "registered": "2026-11-02T14:26:28.904Z",
+  "changed": "2026-11-02T14:26:28.904Z",
+  "edit_key_hash": "15fe753f96f616124f9ae95e84598094c2aac0e399dab304719fcf52975dd4e7",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/seiha_yukimiCW/download/17",
+    "at": "2026-11-02T14:26:28.904Z"
+  }
+}
