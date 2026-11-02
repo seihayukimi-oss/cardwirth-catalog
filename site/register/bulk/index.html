@@ -107,7 +107,7 @@
         <summary>くわしく（移行先URL・注意ラベル・タグ・紹介文）</summary>
         <label class="field">移行先URL<span class="hint">配布先を移転・変更した際の新しいURL。入力すると上記の配布URLは自動的に「旧（移転前）」扱いとなります</span><input data-k="moved_url" type="url" placeholder="https://"></label>
         <div class="field">注意ラベル（あてはまるものすべて）<div class="choices label-choices"></div></div>
-        <label class="field">タグ<span class="hint">「、」で区切る（例：短編、探索、1人用）</span><input data-k="tags" maxlength="400"></label>
+        <label class="field">タグ<span class="hint">「、」で区切る（例：短編、探索、1人用）。よく使うタグは、下のボタンで付け外しできます</span><input data-k="tags" maxlength="400"></label>
         <label class="field">紹介文<textarea data-k="description" rows="3" maxlength="5000"></textarea></label>
       </details>
       <p class="msg" data-row-msg hidden></p>
@@ -147,6 +147,7 @@
       lab.append(Object.assign(document.createElement('input'), { type: 'checkbox', value: l.id }), document.createTextNode(` ${l.name}`));
       box.append(lab);
     }
+    CW.tagChips(li.querySelector('[data-k=tags]'));
     li.querySelector('.row-del').addEventListener('click', () => { li.remove(); number(); });
     rowsEl.append(li);
     number();

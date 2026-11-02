@@ -58,6 +58,7 @@
     set('more_urls', dl.filter((d) => d.status === 'mirror').map((d) => (d.label ? `${d.label} | ${d.url}` : d.url)).join('\n'));
     set('site', e.site); set('intro', (e.intro || []).map((i) => i.url).join('\n'));
     set('tags', (e.tags || []).join('、')); set('description', e.description);
+    form.querySelector('[name=tags]')?.dispatchEvent(new Event('input'));
     form.querySelectorAll('[name=rating]').forEach((r) => { r.checked = r.value === (e.rating || 'all'); });
     form.dataset.content = JSON.stringify(e.content || []);
     form.querySelectorAll('[name=content]').forEach((c) => { c.checked = (e.content || []).includes(c.value); });
@@ -82,6 +83,8 @@
     form.addEventListener('change', upd);
     upd();
     extendLabels(form);
+    const tags = form.querySelector('[name=tags]');
+    if (tags) tagChips(tags);
   }
 
   /** 管理人が増やした注意ラベル（カタログの content_labels）を、ラベルの欄に足す */
@@ -105,9 +108,33 @@
     try { const c = JSON.parse(form.dataset.content || '[]'); box.querySelectorAll('[name=content]').forEach((x) => { if (c.includes(x.value)) x.checked = true; }); } catch { /* なし */ }
   }
 
+  /** よく使うタグ（CWカタログが Readme から自動で付けるタグと同じ言葉） */
+  const TAG_PRESETS = ['店シナ', '読み物', '戦闘あり', '戦闘なし', '短編', '中編', '長編', '1人用', '6人専用'];
+  const splitTags = (v) => String(v || '').split(/[、,，\s]+/).map((t) => t.trim()).filter(Boolean);
+  /** タグの欄の下に、押すと付け外しできるボタンを並べる */
+  function tagChips(input) {
+    const box = document.createElement('div');
+    box.className = 'tag-chips';
+    const btns = TAG_PRESETS.map((t) => {
+      const b = Object.assign(document.createElement('button'), { type: 'button', className: 'chip', textContent: t });
+      b.addEventListener('click', () => {
+        const list = splitTags(input.value);
+        input.value = (list.includes(t) ? list.filter((x) => x !== t) : [...list, t]).join('、');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      return b;
+    });
+    const refresh = () => { const list = splitTags(input.value); btns.forEach((b) => { const on = list.includes(b.textContent); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); };
+    input.addEventListener('input', refresh);
+    input.addEventListener('change', refresh);
+    box.append(...btns);
+    (input.closest('label') || input).after(box);
+    refresh();
+  }
+
   const msg = (el, text, kind = '') => { el.className = `msg ${kind}`; el.textContent = text; el.hidden = !text; };
 
-  window.CW = { $, LABELS, send, get, turnstile, read, fill, wire, msg };
+  window.CW = { $, LABELS, send, get, turnstile, read, fill, wire, msg, tagChips };
 })();
 
 // 作品の入力欄（登録ページと直すページで同じもの）
@@ -162,7 +189,7 @@ window.CW.fieldsHtml = `
 
 <fieldset>
   <legend>紹介</legend>
-  <label class="field">タグ<span class="hint">「、」で区切る（例：短編、探索、1人用）</span><input name="tags" maxlength="400"></label>
+  <label class="field">タグ<span class="hint">「、」で区切る（例：短編、探索、1人用）。よく使うタグは、下のボタンで付け外しできます</span><input name="tags" maxlength="400"></label>
   <label class="field">紹介文<textarea name="description" rows="4" maxlength="5000"></textarea></label>
 </fieldset>
 
