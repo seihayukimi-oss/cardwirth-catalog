@@ -28,7 +28,7 @@
 
   <form id="reg" class="card" novalidate>
     <div id="fields"></div>
-    <fieldset>
+    <fieldset id="claim-box">
       <legend>登録する人</legend>
       <div class="choices">
         <label><input type="radio" name="claim" value="proxy" checked> 作者さん以外（代理登録）</label>
@@ -65,6 +65,8 @@
 (async () => {
   const form = CW.$('#reg');
   CW.$('#fields').innerHTML = CW.fieldsHtml;
+  // 「登録する人」は「情報元・確認方法」のすぐ上に置く（本人かどうかで、選んでほしい情報元が変わるため）
+  form.querySelector('select[name=checked]')?.closest('fieldset')?.before(CW.$('#claim-box'));
   CW.wire(form);
   const msg = CW.$('#msg');
   if (!window.CW_CONFIG.api) CW.msg(msg, '受付の準備中です。もうしばらくお待ちください（登録はまだできません）', 'warn');

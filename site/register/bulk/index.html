@@ -28,6 +28,15 @@
 
   <form id="bulk" class="card" novalidate>
     <fieldset>
+      <legend>登録する人</legend>
+      <div class="choices">
+        <label><input type="radio" name="claim" value="proxy" checked> 作者さん以外（代理登録）</label>
+        <label><input type="radio" name="claim" value="author"> 作者本人</label>
+      </div>
+      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> どの作品も、代理での登録が許可されています（Readme・作者さんのサイトなどで確かめました）</label>
+      <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../../manage/#verify">サイト認証</a>で作品ごとに本人の登録にできます。</p>
+    </fieldset>
+    <fieldset>
       <legend>全部の作品に共通</legend>
       <label class="field"><b class="req">必須</b> 作者名<span class="hint">作者名またはサークル名（※代理登録の場合、登録者ではなく原作者名を入力してください）</span><input name="author" required maxlength="200"></label>
       <label class="field">作者さんのサイト<input name="site" type="url" placeholder="https://"></label>
@@ -43,15 +52,6 @@
       <p><button class="btn small" type="button" id="add">＋作品を足す</button> <span class="hint">一度に20作品まで</span></p>
     </fieldset>
 
-    <fieldset>
-      <legend>登録する人</legend>
-      <div class="choices">
-        <label><input type="radio" name="claim" value="proxy" checked> 作者さん以外（代理登録）</label>
-        <label><input type="radio" name="claim" value="author"> 作者本人</label>
-      </div>
-      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> どの作品も、代理での登録が許可されています（Readme・作者さんのサイトなどで確かめました）</label>
-      <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../../manage/#verify">サイト認証</a>で作品ごとに本人の登録にできます。</p>
-    </fieldset>
     <fieldset>
       <legend>送る前に</legend>
       <ul class="hint">
