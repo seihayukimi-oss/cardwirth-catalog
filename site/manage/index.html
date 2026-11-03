@@ -59,7 +59,7 @@
       <li>「認証を実行」を押す → コードが確認され次第、作者本人の登録へ切り替わり<b>新しい編集キー</b>が発行されます（旧キーは無効化されます。お持ちの作者本人の編集キーを下に入れたときは、新しいキーは出ず、そのキーで直せるようになります）</li>
     </ol>
     <p>※代理登録された作品の引き継ぎや、編集キー紛失時にご利用いただけます。認証コードは確認完了後に削除して問題ありません。</p>
-    <label class="field">まとめて認証する、ほかの作品の作品ID（任意）<span class="hint">同じ作者さんのほかの作品も、いっしょに作者本人の登録にできます。作品IDを空白か改行で区切って並べてください（例：e00002 e00003）。確認用コードは、それぞれの作品に登録してあるページのどれか（作者さんのサイトなど）に1つ載せれば大丈夫です。一度に15作品まで（上の作品IDと合わせて）</span><textarea id="vids" rows="2" placeholder="e00002 e00003"></textarea></label>
+    <label class="field">まとめて作品を認証する登録済みの認証前の作品ID（任意）<span class="hint">同じ作者さんのほかの作品も、いっしょに作者本人の登録にできます。作品IDを空白か改行で区切って並べてください（例：e00002 e00003）。確認用コードは、それぞれの作品に登録してあるページのどれか（作者さんのサイトなど）に1つ載せれば大丈夫です。一度に15作品まで（上の作品IDと合わせて）</span><textarea id="vids" rows="2" placeholder="e00002 e00003"></textarea></label>
     <label class="field">お持ちの作者本人の編集キー（任意）<span class="hint">サイト認証が済んだ作品の編集キーを入れると、新しいキーを作らず、そのキーで直せるようにします（作者名が同じ作品だけ）。空なら新しい編集キーを発行します</span><input id="vkey" placeholder="XXXX-XXXX-…" autocomplete="off"></label>
     <p><button class="btn" type="button" id="vstart">確認用コードを発行</button> <button class="btn" type="button" id="vcheck">認証を実行</button></p>
     <p id="vtoken" class="msg" hidden></p>
