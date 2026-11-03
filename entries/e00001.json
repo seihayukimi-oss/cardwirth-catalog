@@ -29,7 +29,7 @@
   "state": "public",
   "claim": "author",
   "registered": "2026-11-02T14:26:07.792Z",
-  "changed": "2026-11-02T15:21:30.064Z",
+  "changed": "2026-11-03T08:51:25.552Z",
   "edit_key_hash": "44a4b000b5061e5e1750671c081f1e95fb73b1b257418be0151fa4649696c05d",
   "auto_check": {
     "ok": true,
@@ -37,11 +37,7 @@
     "at": "2026-11-02T14:26:07.792Z"
   },
   "verified": {
-    "at": "2026-11-02T14:33:29.472Z",
+    "at": "2026-11-03T08:51:25.552Z",
     "where": "https://seesaawiki.jp/seihayukimicw/"
-  },
-  "verify": {
-    "token": "cw-catalog-verify:szzdmek674gq8hr5",
-    "until": "2026-11-10T08:50:35.302Z"
   }
 }
