@@ -39,5 +39,9 @@
   "verified": {
     "at": "2026-11-02T14:33:29.472Z",
     "where": "https://seesaawiki.jp/seihayukimicw/"
+  },
+  "verify": {
+    "token": "cw-catalog-verify:szzdmek674gq8hr5",
+    "until": "2026-11-10T08:50:35.302Z"
   }
 }
