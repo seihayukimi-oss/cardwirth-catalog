@@ -35,5 +35,9 @@
     "ok": true,
     "where": "https://uu.getuploader.com/seiha_yukimiCW/download/4",
     "at": "2026-11-02T14:26:16.666Z"
+  },
+  "verify": {
+    "token": "cw-catalog-verify:szzdmek674gq8hr5",
+    "until": "2026-11-10T08:50:35.302Z"
   }
 }
