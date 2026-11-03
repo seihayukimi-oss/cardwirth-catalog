@@ -26,18 +26,17 @@
   "rating": "all",
   "checked": "readme",
   "state": "public",
-  "claim": "proxy",
-  "claim_wish": "author",
+  "claim": "author",
   "registered": "2026-11-02T14:26:16.666Z",
-  "changed": "2026-11-02T14:26:16.666Z",
-  "edit_key_hash": "7f8bf6276c5417eaf21e231e0ebe33fc489ea5b685618a661539976ca19b5c7a",
+  "changed": "2026-11-03T08:51:27.885Z",
+  "edit_key_hash": "44a4b000b5061e5e1750671c081f1e95fb73b1b257418be0151fa4649696c05d",
   "auto_check": {
     "ok": true,
     "where": "https://uu.getuploader.com/seiha_yukimiCW/download/4",
     "at": "2026-11-02T14:26:16.666Z"
   },
-  "verify": {
-    "token": "cw-catalog-verify:szzdmek674gq8hr5",
-    "until": "2026-11-10T08:50:35.302Z"
+  "verified": {
+    "at": "2026-11-03T08:51:27.885Z",
+    "where": "https://seesaawiki.jp/seihayukimicw/"
   }
 }
