@@ -25,6 +25,8 @@ legend { font-weight: 600; padding: 0 6px; }
 .field { display: block; margin: 10px 0; font-size: .92rem; }
 .field > input, .field > select, .field > textarea { display: block; margin-top: 4px; font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); width: 100%; }
 .field > .hint { display: block; }
+.field-head-wrap { margin-top: 18px; }
+.field-head { display: block; font-size: 1.02rem; color: var(--ink); border-left: 4px solid var(--accent); padding: 1px 0 1px 8px; margin-bottom: 4px; }
 .field .choices { margin-top: 4px; }
 .choices label { display: inline-flex; gap: 4px; align-items: center; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
