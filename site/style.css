@@ -46,6 +46,9 @@ button.btn:disabled { opacity: .6; cursor: wait; }
 .msg-line.key { font-family: ui-monospace, Consolas, monospace; font-size: .92em; word-break: break-all; }
 .msg-line.danger { color: #c0392b; font-weight: 700; }
 @media (prefers-color-scheme: dark) { .msg-line.danger { color: #ff7b72; } }
+.ts-warn { margin: 8px 0 12px; padding: 8px 12px; border: 1px solid #c0392b; border-left-width: 4px; border-radius: 6px; font-size: .88rem; line-height: 1.7; }
+.ts-warn b { color: #c0392b; }
+@media (prefers-color-scheme: dark) { .ts-warn { border-color: #ff7b72; } .ts-warn b { color: #ff7b72; } }
 .keys { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; }
 .keys dd { margin: 0; }
 [hidden] { display: none !important; }
