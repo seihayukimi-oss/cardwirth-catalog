@@ -109,7 +109,7 @@
   }
 
   /** よく使うタグ：カタログ（index.json の tag_presets。管理ページで直せる）から読む。読めないときは最初の一覧 */
-  const TAG_PRESETS = ['プライベート店', '読み物', '冒険', '戦闘', '店', 'その他', 'Lv無', 'Lv低', 'Lv中', 'Lv高', '一人用', '二人用', '少人数', '六人用', '短編', '中編', '長編', 'ギャグシナ', 'ホラーシナ', '悪役シナ', '両想い', '片想い', '相棒親友', 'ゴブ洞', '100kb'];
+  const TAG_PRESETS = ['プライベート店', '読み物', '冒険', '戦闘あり', '店', 'その他', 'Lv無', 'Lv低', 'Lv中', 'Lv高', '一人用', '二人用', '少人数', '六人用', '短編', '中編', '長編', 'ギャグシナ', 'ホラーシナ', '悪役シナ', '両想い', '片想い', '相棒親友', 'ゴブ洞', '100kb'];
   const INDEX_URL = new URL('index.json', document.currentScript?.src || location.href).href;
   let presetsP = null;
   const tagPresets = () => (presetsP ||= fetch(INDEX_URL, { cache: 'no-cache' }).then((r) => r.json()).then((j) => (Array.isArray(j.tag_presets) && j.tag_presets.length ? j.tag_presets.map(String) : TAG_PRESETS)).catch(() => TAG_PRESETS));
