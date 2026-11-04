@@ -146,3 +146,9 @@ ul.log li { padding: 6px 0; border-bottom: 1px solid var(--line); font-size: .92
 .site-menu a { display: block; padding: 8px 12px; border-radius: 8px; color: var(--ink); text-decoration: none; }
 .site-menu a:hover { background: color-mix(in srgb, var(--accent) 10%, var(--panel)); color: var(--accent); }
 .site-menu a[aria-current="page"] { color: var(--accent); font-weight: 700; background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+.tag-chips .chip.level-btn{border-style:dashed}
+.level-dialog{max-width:440px;width:calc(100% - 32px);border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);padding:16px 18px}
+.level-dialog::backdrop{background:rgba(0,0,0,.35)}
+.level-dialog h3{margin:0 0 6px}
+.level-dialog .lv-nums{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.level-dialog .lv-preview{min-height:1.4em;margin:4px 0}

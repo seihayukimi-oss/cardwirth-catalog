@@ -195,7 +195,7 @@
       h('span', { class: `badge st-${state}` }, STATE[state] || state),
       e.rating && e.rating !== 'all' ? h('span', { class: `badge rt-${e.rating}` }, RATING[e.rating]) : null,
       ...(e.content || []).map((c) => h('span', { class: 'badge lb' }, labelName(c))),
-      h('span', { class: 'badge plain' }, e.claim === 'author' ? (vsite ? `作者本人（認証：${vsite}）` : '作者本人') : e.claim_wish === 'author' ? '作者本人（未認証）' : '代理登録'),
+      h('span', { class: 'badge plain' }, e.claim === 'author' ? (vsite ? `作者本人（認証サイト名：${vsite}）` : '作者本人') : e.claim_wish === 'author' ? '作者本人（未認証）' : '代理登録'),
       e.claim === 'author' && e.same_name?.others?.length ? h('span', { class: 'badge st-pending', title: '同じ作者名で、別のサイトで認証した作者本人の作品があります。同じ名前の別の作者さんか、なりすましでないか確かめてください' }, '⚠ 同じ作者名・別のサイト') : null,
       reportCount(e.id) ? h('span', { class: 'badge st-pending' }, `通報 ${reportCount(e.id)}`) : null,
     ));
@@ -214,7 +214,7 @@
     if (e.takedown) row('掲載停止の申請', h('b', {}, e.takedown.reason || '（理由なし）'), h('span', { class: 'muted' }, `（${when(e.takedown.at)}・申請の前は${STATE[e.takedown.from] || e.takedown.from || '？'}）`));
     if (state === 'held' && e.held_reason) row('一時保留の理由', e.held_reason, e.report_hold ? h('span', { class: 'muted' }, `（通報で自動：${REASON[e.report_hold.reason] || e.report_hold.reason} ${e.report_hold.count}人・${when(e.report_hold.at)}）`) : '');
     if (reportCount(e.id)) row('通報', Object.entries(S.reports[e.id]).map(([k, n]) => `${REASON[k] || k} ${n}人`).join('・'));
-    if (e.verified) row('サイト認証', e.verified.via === 'author_key' ? `作者本人の編集キーで登録（${e.verified.from || ''} と同じキー）` : link(e.verified.where), vsite ? h('span', {}, `・認証したサイト：${vsite}`) : null, h('span', { class: 'muted' }, `（${when(e.verified.at)}）`));
+    if (e.verified) row('サイト認証', e.verified.via === 'author_key' ? `作者本人の編集キーで登録（${e.verified.from || ''} と同じキー）` : link(e.verified.where), vsite ? h('span', {}, `・認証サイト名：${vsite}`) : null, h('span', { class: 'muted' }, `（${when(e.verified.at)}）`));
     if (e.claim === 'author' && e.same_name?.others?.length) row('⚠ 同じ作者名', h('span', { class: 'msg-line danger' }, `別のサイトで認証した作者本人の作品があります：${e.same_name.others.map((x) => `${x.id}（${x.site}）`).join('、')}`), h('span', { class: 'muted' }, '同じ名前の別の作者さんか、なりすましでないか確かめてください'));
     if (e.verify) row('サイト認証', `手続き中（${when(e.verify.until)} まで）`);
     if ((e.tags || []).length) row('タグ', e.tags.join('、'));

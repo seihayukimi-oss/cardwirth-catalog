@@ -133,9 +133,77 @@
         });
         return b;
       });
-      box.replaceChildren(...btns);
+      const lvBtn = Object.assign(document.createElement('button'), { type: 'button', className: 'chip level-btn', textContent: '＋対象レベル設定タグ' });
+      lvBtn.addEventListener('click', () => levelDialog(input));
+      box.replaceChildren(...btns, lvBtn);
       refresh();
     });
+  }
+
+  // ------------------------------------------------------------ 対象レベルのタグ（「Lv3以上」「Lv5以下」。アプリが Readme から付けるタグと同じ形）
+  /** 書き方を読む：「3～5」「1-3」「２ー４」「3から5」「Lv3～Lv5」「3以上」「5以下」「4」など */
+  function parseLevel(text) {
+    const t = String(text || '').normalize('NFKC').replace(/(?:Lv\.?|LV\.?|lv\.?|レベル)/g, '');
+    const two = t.match(/(\d{1,2})\s*(?:[~～〜\-ー―−]|から|to)\s*(\d{1,2})/);
+    if (two) { const a = +two[1], b = +two[2]; return { min: Math.min(a, b), max: Math.max(a, b) }; }
+    const up = t.match(/(\d{1,2})\s*(?:以上|～$|~$|〜$|-$|から$)/);
+    if (up) return { min: +up[1], max: null };
+    const down = t.match(/(\d{1,2})\s*以下|(?:[~～〜\-ー]|まで)\s*(\d{1,2})/);
+    if (down) return { min: null, max: +(down[1] || down[2]) };
+    const one = t.match(/^\s*(\d{1,2})\s*(?:$|[^\d])/);
+    if (one) return { min: +one[1], max: +one[1] };
+    return null;
+  }
+  const LV_TAG = /^Lv\d{1,2}(?:以上|以下)$/;
+  /** 対象レベルを入れる窓。自由に書く（1～3 など）か、下限・上限の数字で入れる。前の Lv●以上・Lv●以下 は入れ替える */
+  function levelDialog(input) {
+    const d = document.createElement('dialog');
+    d.className = 'level-dialog';
+    const now = splitTags(input.value);
+    const curMin = now.map((t) => /^Lv(\d+)以上$/.exec(t)?.[1]).find(Boolean) || '';
+    const curMax = now.map((t) => /^Lv(\d+)以下$/.exec(t)?.[1]).find(Boolean) || '';
+    d.innerHTML = `
+      <h3>対象レベル設定タグ</h3>
+      <p class="hint">自由に書くか、下限・上限の数字を入れてください。「Lv3以上」「Lv5以下」のようなタグになります。（片方だけでも大丈夫です）</p>
+      <label class="field">自由に書く<span class="hint">例：1～3、1-3、２ー４、3以上、5以下</span><input class="lv-free" placeholder="1～3"></label>
+      <div class="lv-nums"><label class="field">対象Lv下限<input class="lv-min" type="number" min="1" max="99" inputmode="numeric"></label>
+      <label class="field">対象Lv上限<input class="lv-max" type="number" min="1" max="99" inputmode="numeric"></label></div>
+      <p class="lv-preview hint"></p>
+      <p class="lv-actions"><button type="button" class="btn lv-ok">タグに入れる</button> <button type="button" class="btn ghost lv-clear">レベルのタグを外す</button> <button type="button" class="btn ghost lv-cancel">やめる</button></p>`;
+    document.body.append(d);
+    const q = (c) => d.querySelector(c);
+    q('.lv-min').value = curMin; q('.lv-max').value = curMax;
+    const read = () => {
+      const free = parseLevel(q('.lv-free').value);
+      const min = free ? free.min : (q('.lv-min').value ? Math.max(1, Math.min(99, +q('.lv-min').value)) : null);
+      const max = free ? free.max : (q('.lv-max').value ? Math.max(1, Math.min(99, +q('.lv-max').value)) : null);
+      if (min != null && max != null && min > max) return { min: max, max: min };
+      return { min, max };
+    };
+    const tagsOf = (lv) => [lv.min != null ? `Lv${lv.min}以上` : '', lv.max != null ? `Lv${lv.max}以下` : ''].filter(Boolean);
+    const preview = () => {
+      const free = q('.lv-free').value.trim();
+      if (free && !parseLevel(free)) { q('.lv-preview').textContent = '読み取れませんでした（例：1～3、3以上）'; return; }
+      const t = tagsOf(read());
+      q('.lv-preview').textContent = t.length ? `入るタグ：${t.join('、')}` : '';
+    };
+    d.addEventListener('input', (ev) => {
+      // 自由に書いた内容が読めたら、下限・上限の数字もそろえる（見た目が食い違わないように）
+      if (ev.target.classList.contains('lv-free')) { const lv = parseLevel(ev.target.value); if (lv) { q('.lv-min').value = lv.min ?? ''; q('.lv-max').value = lv.max ?? ''; } }
+      else q('.lv-free').value = '';
+      preview();
+    });
+    const put = (add) => {
+      input.value = [...splitTags(input.value).filter((t) => !LV_TAG.test(t)), ...add].join('、');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      d.close();
+    };
+    q('.lv-ok').addEventListener('click', () => { const t = tagsOf(read()); if (!t.length) { q('.lv-preview').textContent = 'レベルを入れてください'; return; } put(t); });
+    q('.lv-clear').addEventListener('click', () => put([]));
+    q('.lv-cancel').addEventListener('click', () => d.close());
+    d.addEventListener('close', () => d.remove());
+    preview();
+    d.showModal();
   }
 
   const msg = (el, text, kind = '') => {
