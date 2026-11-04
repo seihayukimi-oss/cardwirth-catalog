@@ -189,12 +189,14 @@
     const box = h('p', { class: 'msg', hidden: true });
 
     // 見出し
+    const vsite = verifiedSite(e);
     card.append(h('div', { class: 'entry-head' },
       h('span', { class: 'eid' }, e.id),
       h('span', { class: `badge st-${state}` }, STATE[state] || state),
       e.rating && e.rating !== 'all' ? h('span', { class: `badge rt-${e.rating}` }, RATING[e.rating]) : null,
       ...(e.content || []).map((c) => h('span', { class: 'badge lb' }, labelName(c))),
-      h('span', { class: 'badge plain' }, e.claim === 'author' ? '作者本人' : e.claim_wish === 'author' ? '作者本人（未認証）' : '代理登録'),
+      h('span', { class: 'badge plain' }, e.claim === 'author' ? (vsite ? `作者本人（認証：${vsite}）` : '作者本人') : e.claim_wish === 'author' ? '作者本人（未認証）' : '代理登録'),
+      e.claim === 'author' && e.same_name?.others?.length ? h('span', { class: 'badge st-pending', title: '同じ作者名で、別のサイトで認証した作者本人の作品があります。同じ名前の別の作者さんか、なりすましでないか確かめてください' }, '⚠ 同じ作者名・別のサイト') : null,
       reportCount(e.id) ? h('span', { class: 'badge st-pending' }, `通報 ${reportCount(e.id)}`) : null,
     ));
     card.append(h('h3', { class: 'entry-title' }, e.name || '（作品名なし）', h('span', { class: 'by' }, ` ／ ${e.author || '（作者名なし）'}`)));
@@ -212,7 +214,8 @@
     if (e.takedown) row('掲載停止の申請', h('b', {}, e.takedown.reason || '（理由なし）'), h('span', { class: 'muted' }, `（${when(e.takedown.at)}・申請の前は${STATE[e.takedown.from] || e.takedown.from || '？'}）`));
     if (state === 'held' && e.held_reason) row('一時保留の理由', e.held_reason, e.report_hold ? h('span', { class: 'muted' }, `（通報で自動：${REASON[e.report_hold.reason] || e.report_hold.reason} ${e.report_hold.count}人・${when(e.report_hold.at)}）`) : '');
     if (reportCount(e.id)) row('通報', Object.entries(S.reports[e.id]).map(([k, n]) => `${REASON[k] || k} ${n}人`).join('・'));
-    if (e.verified) row('サイト認証', e.verified.via === 'author_key' ? `作者本人の編集キーで登録（${e.verified.from || ''} と同じキー）` : link(e.verified.where), h('span', { class: 'muted' }, `（${when(e.verified.at)}）`));
+    if (e.verified) row('サイト認証', e.verified.via === 'author_key' ? `作者本人の編集キーで登録（${e.verified.from || ''} と同じキー）` : link(e.verified.where), vsite ? h('span', {}, `・認証したサイト：${vsite}`) : null, h('span', { class: 'muted' }, `（${when(e.verified.at)}）`));
+    if (e.claim === 'author' && e.same_name?.others?.length) row('⚠ 同じ作者名', h('span', { class: 'msg-line danger' }, `別のサイトで認証した作者本人の作品があります：${e.same_name.others.map((x) => `${x.id}（${x.site}）`).join('、')}`), h('span', { class: 'muted' }, '同じ名前の別の作者さんか、なりすましでないか確かめてください'));
     if (e.verify) row('サイト認証', `手続き中（${when(e.verify.until)} まで）`);
     if ((e.tags || []).length) row('タグ', e.tags.join('、'));
     if (e.description) row('紹介文', h('span', { class: 'pre' }, e.description));
@@ -464,6 +467,23 @@
     } catch (e) { box.replaceChildren(h('p', { class: 'msg bad' }, e.message)); }
   }
   $('#log-more').addEventListener('click', () => loadLog(false));
+
+  // ------------------------------------------------------------ 作者本人の認証したサイト
+  /** 見分け用の短い形（ホスト名＋最初の部分。scripts/build.mjs の siteLabel と同じ） */
+  function siteLabel(u) {
+    try {
+      const x = new URL(u);
+      const host = x.hostname.toLowerCase().replace(/^www\./, '');
+      const first = x.pathname.split('/').filter(Boolean)[0] || '';
+      return first && !/\.[a-z0-9]{2,5}$/i.test(first) ? `${host}/${first}` : host;
+    } catch { return ''; }
+  }
+  /** 作者本人の作品の、認証したサイト（作者本人の編集キーで登録した作品は、キーを持っていた作品のサイト） */
+  function verifiedSite(e, depth = 0) {
+    if (!e || e.claim !== 'author' || depth > 5) return '';
+    if (e.verified?.where) return siteLabel(e.verified.where);
+    return e.verified?.from ? verifiedSite((S.entries || []).find((x) => x.id === e.verified.from), depth + 1) : '';
+  }
 
   // ------------------------------------------------------------ はじめ
   const saved = store.get();

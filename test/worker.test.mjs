@@ -189,3 +189,25 @@ test('作者本人の編集キー：あとから登録する作品・まとめ�
   assert.equal(ck.body.edit_key, null);
   assert.equal((await call('/api/edit', { ...form, name: 'サンプル店', site, id: p.id, key })).status, 200);
 });
+
+test('同じ作者名で、別のサイトで認証した作者本人がいたら、作品に印を付けて管理人に知らせる（止めはしない）', async () => {
+  const siteA = 'https://author-a.example/works/';
+  const siteB = 'https://author-b.example/';
+  pages.set(siteA, '<html><body>テスト作者のサイトA</body></html>');
+  pages.set(siteB, '<html><body>テスト作者のサイトB</body></html>');
+  const a = (await call('/api/register', { ...form, name: 'サンプルA', site: siteA, claim: 'author' })).body;
+  const st = await call('/api/verify/start', { id: a.id });
+  pages.set(siteA, `<html><body>${st.body.token}</body></html>`);
+  assert.equal((await call('/api/verify/check', { id: a.id })).status, 200);
+  const ea = JSON.parse(files.get(`entries/${a.id}.json`));
+  assert.equal(ea.same_name?.others?.some((x) => x.site === 'author-a.example/works') ?? false, false);
+  // 同じ作者名で、別のサイトで認証 → 認証はできるが same_name が付く
+  const b = (await call('/api/register', { ...form, name: 'サンプルB', site: siteB, claim: 'author' })).body;
+  const st2 = await call('/api/verify/start', { id: b.id });
+  pages.set(siteB, `<html><body>${st2.body.token}</body></html>`);
+  const ck = await call('/api/verify/check', { id: b.id });
+  assert.equal(ck.status, 200, JSON.stringify(ck.body));
+  const eb = JSON.parse(files.get(`entries/${b.id}.json`));
+  assert.equal(eb.claim, 'author');
+  assert.ok(eb.same_name.others.some((x) => x.id === a.id && x.site === 'author-a.example/works'), JSON.stringify(eb.same_name));
+});

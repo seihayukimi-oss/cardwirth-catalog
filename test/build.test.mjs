@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { toPublic, buildCatalog, buildMeta } from '../scripts/build.mjs';
+import { toPublic, buildCatalog, buildMeta, siteLabel } from '../scripts/build.mjs';
 
 const base = { id: 'e00001', name: 'サンプル店', author: 'テスト作者', downloads: [{ url: 'https://example.com/mori.zip', kind: 'direct' }] };
 const meta = { name: 'テスト', attribution: { name: 'テスト' }, license: 'CC0-1.0', links: {}, content_labels: [{ id: 'utsu', name: '鬱' }, { id: 'BAD', name: 'x' }] };
@@ -58,4 +58,14 @@ test('meta.json：ツールと同じ指紋の取り方・コミットを固定�
   assert.equal(m.mirrors[0], `https://cdn.jsdelivr.net/gh/seihayukimi-oss/cardwirth-catalog@${'a'.repeat(40)}/public/index.json`);
   assert.equal(m.r18.mirrors[0].endsWith('/public/index-r18.json'), true);
   assert.equal(m.count, 1);
+});
+
+test('作者本人の認証したサイト：ホスト名＋最初の部分を verified_site に出す（作者本人の編集キーで登録した作品は、キーを持っていた作品のサイト）', () => {
+  assert.equal(siteLabel('https://www.example.com/abc/d/e.html'), 'example.com/abc');
+  assert.equal(siteLabel('https://example.com/index.html'), 'example.com');
+  const a = { ...base, claim: 'author', verified: { where: 'https://author.example/works/top.html' } };
+  const b = { ...base, id: 'e00002', name: 'サンプルB', claim: 'author', verified: { via: 'author_key', from: 'e00001' } };
+  const c = { ...base, id: 'e00003', name: 'サンプルC', claim: 'proxy' };
+  const r = buildCatalog(meta, [a, b, c].map((d) => ({ file: `${d.id}.json`, data: d })), block);
+  assert.deepEqual(r.index.entries.map((e) => e.verified_site), ['author.example/works', 'author.example/works', undefined]);
 });

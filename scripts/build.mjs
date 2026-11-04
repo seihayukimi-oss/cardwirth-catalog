@@ -19,9 +19,22 @@ const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const sha256 = (s) => createHash('sha256').update(s, 'utf8').digest('hex');
 const hostOf = (u) => { try { return new URL(u).hostname.toLowerCase(); } catch { return ''; } };
 const norm = (s) => String(s || '').normalize('NFKC').toLowerCase().replace(/\s+/g, '');
+/**
+ * サイト認証をしたサイトの、見分け用の短い形：ホスト名（www. は外す）＋最初の部分。
+ * 例：https://seesaawiki.jp/abc/d/page → seesaawiki.jp/abc。同じ名前の別の作者さんを見分けるのに使う
+ */
+export function siteLabel(u) {
+  if (!isHttp(u)) return '';
+  try {
+    const x = new URL(u);
+    const host = x.hostname.toLowerCase().replace(/^www\./, '');
+    const first = x.pathname.split('/').filter(Boolean)[0] || '';
+    return first && !/\.[a-z0-9]{2,5}$/i.test(first) ? `${host}/${first}` : host;
+  } catch { return ''; }
+}
 
 /** 配る形に整える（管理用の項目は出さない）。おかしければ理由を返す */
-export function toPublic(e, block = { urls: [], hosts: [], authors: [] }) {
+export function toPublic(e, block = { urls: [], hosts: [], authors: [] }, verifiedSite = '') {
   if (!e || typeof e !== 'object') return { error: '形が正しくありません' };
   if (!ID_RE.test(e.id || '')) return { error: 'id が正しくありません（e＋5桁以上の数字）' };
   const state = STATES.has(e.state) ? e.state : 'public';
@@ -63,6 +76,8 @@ export function toPublic(e, block = { urls: [], hosts: [], authors: [] }) {
   if (content.length) out.content = content;
   if (state === 'held') { out.state = 'held'; if (str(e.held_reason, 300)) out.held_reason = str(e.held_reason, 300); }
   if (e.claim === 'author' || e.claim === 'proxy') out.claim = e.claim;
+  // 作者さん本人の登録：どのサイトで認証したか（作者本人の編集キーで登録したときは、キーを持っていた作品のサイト）
+  if (e.claim === 'author') { const s = siteLabel(e.verified?.where) || verifiedSite; if (s) out.verified_site = s; }
   for (const [k, max] of [['description', 5000], ['readme', 300], ['checked_note', 300]]) if (str(e[k], max)) out[k] = str(e[k], max);
   if (['readme', 'site', 'author', 'other'].includes(e.checked)) out.checked = e.checked;
   if (isHttp(e.site)) out.site = e.site;
@@ -82,16 +97,19 @@ export function buildCatalog(meta, entries, block) {
   const warnings = [];
   const pub = [], r18 = [];
   const seen = new Set();
+  // 作者本人の編集キーで登録した作品は、キーを持っていた作品（verified.from）の認証したサイトを使う
+  const byId = new Map(entries.map(({ data }) => [data?.id, data]));
+  const siteOf = (d, depth = 0) => (d?.verified?.where ? siteLabel(d.verified.where) : d?.verified?.from && depth < 5 ? siteOf(byId.get(d.verified.from), depth + 1) : '');
   for (const { file, data } of entries) {
     if (data?.id && seen.has(data.id)) { warnings.push(`${file}：id ${data.id} が重なっています（後のものを飛ばしました）`); continue; }
     if (data?.id) seen.add(data.id);
-    const r = toPublic(data, block);
+    const r = toPublic(data, block, data?.claim === 'author' ? siteOf(data) : '');
     if (r.error) { warnings.push(`${file}：${r.error}（飛ばしました）`); continue; }
     if (r.skip) continue;
     (r.entry.rating === 'r18' ? r18 : pub).push(r.entry);
   }
-  const byId = (a, b) => a.id.localeCompare(b.id);
-  pub.sort(byId); r18.sort(byId);
+  const byIdOrder = (a, b) => a.id.localeCompare(b.id);
+  pub.sort(byIdOrder); r18.sort(byIdOrder);
   const contentLabels = (Array.isArray(meta.content_labels) ? meta.content_labels : []).filter((d) => d && LABEL_RE.test(d.id || '') && str(d.name, 30)).map((d) => ({ id: d.id, name: str(d.name, 30), ...(str(d.description, 200) ? { description: str(d.description, 200) } : {}) }));
   // 登録ページの「よく使うタグ」のボタン（管理ページで直せる）
   const tagPresets = [...new Set((Array.isArray(meta.tag_presets) ? meta.tag_presets : []).map((t) => str(t, 40)).filter((t) => t && !/[、,，\s]/.test(t)))].slice(0, 60);
