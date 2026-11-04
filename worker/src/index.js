@@ -5,7 +5,7 @@
 //  POST /api/unregister      編集キーで登録を解除する
 //  POST /api/takedown        掲載をやめてほしい（だれでも。すぐ非公開になり、管理人が確かめる）
 //  POST /api/verify/start    サイト認証を始める（確認用の文字を返す。ほかの作品IDも並べれば、まとめて）
-//  POST /api/verify/check    サイト認証を確かめる（見つかった作品を作者さん本人の登録にし、新しい編集キーを返す。
+//  POST /api/verify/check    サイト認証を確かめる（見つかった作品を作者様本人の登録にし、新しい編集キーを返す。
 //                            作者本人の編集キーを渡せば、新しいキーは作らず、そのキーで直せるようにする）
 //  ※ 作者本人の編集キー：サイト認証が済んだ作品の編集キー。同じ作者名の作品なら、まとめて認証・あとからの登録でも使える
 //  POST /api/report          通報（report.js。だれでも。人数が集まると一時保留）
@@ -135,7 +135,7 @@ async function authorKeyEntries(gh, key) {
 /** 作者本人の編集キーが、この作者名の作品に使えるか（認証済みの作品と作者名が同じとき） */
 const keyFitsAuthor = (owned, author) => owned.some((e) => normText(e.author) === normText(author));
 /**
- * 同じ作者名で、別のサイトで認証した「作者本人」の作品（同じ名前の別の作者さんか、なりすましかもしれない）。
+ * 同じ作者名で、別のサイトで認証した「作者本人」の作品（同じ名前の別の作者様か、なりすましかもしれない）。
  * 止めはしないで、管理人に知らせる。作品の一覧は tarball 1回
  */
 async function allEntries(gh) {
@@ -152,7 +152,7 @@ function sameNameOthers(all, author, site, exceptIds = []) {
   return all.filter((e) => e.claim === 'author' && e.state !== 'removed' && !skip.has(e.id) && normText(e.author) === normText(author))
     .map((e) => ({ id: e.id, site: siteOf(e) })).filter((x) => x.site && x.site !== site);
 }
-const sameNameNote = (others) => (others.length ? `⚠ 同じ作者名で、別のサイトで認証した作者本人の作品があります（${others.map((x) => `${x.id}：${x.site}`).join('、')}）。同じ名前の別の作者さんか、なりすましでないか確かめてください` : '');
+const sameNameNote = (others) => (others.length ? `⚠ 同じ作者名で、別のサイトで認証した作者本人の作品があります（${others.map((x) => `${x.id}：${x.site}`).join('、')}）。同じ名前の別の作者様か、なりすましでないか確かめてください` : '');
 const AUTHOR_KEY_NG = '作者本人の編集キーが違うか、作者名がサイト認証済みの作品と違います（作者名は、認証済みの作品と同じにしてください）';
 /** 作品IDの並び（空白・改行・「、」で区切る。最初の1つ＋ほか。15作品まで） */
 function idList(first, more) {
@@ -186,7 +186,7 @@ async function register(env, gh, f, notify) {
   const base = {
     ...entry,
     state: auto.ok ? 'public' : 'pending',
-    // 作者さん本人かどうかは、サイト認証（か作者本人の編集キー）で確かめるまで「代理登録」として扱う
+    // 作者様本人かどうかは、サイト認証（か作者本人の編集キー）で確かめるまで「代理登録」として扱う
     claim: owned ? 'author' : 'proxy',
     ...(f.claim === 'author' && !owned ? { claim_wish: 'author' } : {}),
     ...(owned ? { verified: { at: now(), via: 'author_key', from: owned.from, ...(owned.where ? { where: owned.where } : {}) } } : {}),
@@ -204,7 +204,7 @@ async function register(env, gh, f, notify) {
     if (r.ok) {
       const saved = { id, ...base };
       const warn = sameNameNote(others);
-      if (base.state === 'pending') notify('pending', 'pending', saved, [owned ? `作者さん本人の登録（作者本人の編集キー：${owned.from} と同じ）` : f.claim === 'author' ? '作者さん本人としての登録（サイト認証はまだ）' : '代理登録', warn].filter(Boolean).join('\n'));
+      if (base.state === 'pending') notify('pending', 'pending', saved, [owned ? `作者様本人の登録（作者本人の編集キー：${owned.from} と同じ）` : f.claim === 'author' ? '作者様本人としての登録（サイト認証はまだ）' : '代理登録', warn].filter(Boolean).join('\n'));
       else notify('public_new', 'public_new', saved, [`確認できたページ：${auto.where}`, warn].filter(Boolean).join('\n'));
       return { id, edit_key: key || null, author_key_used: !!owned, state: base.state, where: auto.where };
     }
@@ -291,13 +291,13 @@ async function verifyCheck(env, gh, f, notify) {
     const where = pagesOf(g.entry).find((u) => found.has(u));
     if (g.entry.state === 'removed') failed.push({ id: g.id, reason: '登録が解除されています' });
     else if (v?.token !== token) failed.push({ id: g.id, reason: '確認用コードの発行に入っていません' });
-    else if (!where) failed.push({ id: g.id, reason: 'この作品のページ（配布ページ・紹介ページ・作者さんのサイト）に、確認用コードがありません' });
+    else if (!where) failed.push({ id: g.id, reason: 'この作品のページ（配布ページ・紹介ページ・作者様のサイト）に、確認用コードがありません' });
     else if (owned && !keyFitsAuthor(owned.entries, g.entry.author)) failed.push({ id: g.id, reason: '作者名が、作者本人の編集キーの作品と違います' });
     else {
       const { verify, claim_wish, same_name, ...rest } = g.entry;
       all ||= await allEntries(gh);
       const others = sameNameOthers(all, g.entry.author, siteLabel(where), ids);
-      await saveEntry(gh, { ...rest, claim: 'author', verified: { at: now(), where }, ...(others.length ? { same_name: { others, at: now() } } : {}), edit_key_hash: hash, changed: now() }, g.sha, `サイト認証：${g.id} ${g.entry.name}（作者さん本人の登録にしました）`);
+      await saveEntry(gh, { ...rest, claim: 'author', verified: { at: now(), where }, ...(others.length ? { same_name: { others, at: now() } } : {}), edit_key_hash: hash, changed: now() }, g.sha, `サイト認証：${g.id} ${g.entry.name}（作者様本人の登録にしました）`);
       notify('change', 'verify', g.entry, [`確認できたページ：${where}`, sameNameNote(others)].filter(Boolean).join('\n'));
       done.push(g.id);
     }
@@ -319,7 +319,7 @@ const ROUTES = {
 export default {
   async fetch(req, env, ctx) {
     const h = cors(env, req);
-    // Discord への知らせは、返事を返したあとで送る（作者さんを待たせない）
+    // Discord への知らせは、返事を返したあとで送る（作者様を待たせない）
     const later = [];
     const notify = (event, kind, entry, extra) => later.push(notifyAdmins(env, event, entryMessage(env, kind, entry, extra)).catch(() => {}));
     const res = await route(req, env, h, notify);

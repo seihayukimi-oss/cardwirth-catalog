@@ -155,7 +155,7 @@
     return null;
   }
   const LV_TAG = /^Lv\d{1,2}(?:以上|以下)$/;
-  /** 対象レベルを入れる窓。自由に書く（1～3 など）か、下限・上限の数字で入れる。前の Lv●以上・Lv●以下 は入れ替える */
+  /** 対象レベルを入れる窓。自由記入（1～3 など）か、下限・上限の数字で入れる。前の Lv●以上・Lv●以下 は入れ替える */
   function levelDialog(input) {
     const d = document.createElement('dialog');
     d.className = 'level-dialog';
@@ -164,8 +164,8 @@
     const curMax = now.map((t) => /^Lv(\d+)以下$/.exec(t)?.[1]).find(Boolean) || '';
     d.innerHTML = `
       <h3>対象レベル設定タグ</h3>
-      <p class="hint">自由に書くか、下限・上限の数字を入れてください。「Lv3以上」「Lv5以下」のようなタグになります。（片方だけでも大丈夫です）</p>
-      <label class="field">自由に書く<span class="hint">例：1～3、1-3、２ー４、3以上、5以下</span><input class="lv-free" placeholder="1～3"></label>
+      <p class="hint">自由記入か、下限・上限の数字を入れてください。「Lv3以上」「Lv5以下」のようなタグになります。（片方だけでも大丈夫です）</p>
+      <label class="field">自由記入<span class="hint">例：1～3、1-3、２ー４、3以上、5以下</span><input class="lv-free" placeholder="1～3"></label>
       <div class="lv-nums"><label class="field">対象Lv下限<input class="lv-min" type="number" min="1" max="99" inputmode="numeric"></label>
       <label class="field">対象Lv上限<input class="lv-max" type="number" min="1" max="99" inputmode="numeric"></label></div>
       <p class="lv-preview hint"></p>
@@ -188,7 +188,7 @@
       q('.lv-preview').textContent = t.length ? `入るタグ：${t.join('、')}` : '';
     };
     d.addEventListener('input', (ev) => {
-      // 自由に書いた内容が読めたら、下限・上限の数字もそろえる（見た目が食い違わないように）
+      // 自由記入の内容が読めたら、下限・上限の数字もそろえる（見た目が食い違わないように）
       if (ev.target.classList.contains('lv-free')) { const lv = parseLevel(ev.target.value); if (lv) { q('.lv-min').value = lv.min ?? ''; q('.lv-max').value = lv.max ?? ''; } }
       else q('.lv-free').value = '';
       preview();
@@ -235,7 +235,7 @@ window.CW.fieldsHtml = `
 
 <fieldset>
   <legend>配布先</legend>
-  <label class="field"><b class="req">必須</b> 配布URL<span class="hint">作者さんの配布ページ・BOOTH・アップローダーなど</span><input name="url" type="url" required placeholder="https://"></label>
+  <label class="field"><b class="req">必須</b> 配布URL<span class="hint">作者様の配布ページ・BOOTH・アップローダーなど</span><input name="url" type="url" required placeholder="https://"></label>
   <div class="row2">
     <label class="field">URLの種類
       <select name="url_kind"><option value="page">配布ページ</option><option value="direct">zipなどへの直接のリンク</option><option value="list">ファイル一覧（アップローダーの一覧ページ）</option></select></label>
@@ -248,8 +248,8 @@ window.CW.fieldsHtml = `
 </fieldset>
 
 <fieldset>
-  <legend>作者さんのサイト・紹介ページ</legend>
-  <label class="field">作者さんのサイト<input name="site" type="url" placeholder="https://"></label>
+  <legend>作者様のサイト・紹介ページ</legend>
+  <label class="field">作者様のサイト<input name="site" type="url" placeholder="https://"></label>
   <label class="field">紹介ページ<span class="hint">作品の紹介ページ・X・Misskey の告知など。1行に1つ</span><textarea name="intro" rows="2"></textarea></label>
 </fieldset>
 

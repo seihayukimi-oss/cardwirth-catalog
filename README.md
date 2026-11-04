@@ -1,7 +1,7 @@
 # CardWirth 共用カタログ
 
 CardWirth（1.50・Next・Py）のシナリオ・素材・スキンの**配布場所**をまとめた、だれでも使える共用カタログです。
-作品のファイルそのものは置きません（作者さんの配布ページ・配布ファイルへの案内だけです）。
+作品のファイルそのものは置きません（作者様の配布ページ・配布ファイルへの案内だけです）。
 
 - カタログのURL（CWカタログに入れる）：`https://seihayukimi-oss.github.io/cardwirth-catalog/index.json`
 - トップページ：https://seihayukimi-oss.github.io/cardwirth-catalog/
@@ -38,7 +38,7 @@ CardWirth（1.50・Next・Py）のシナリオ・素材・スキンの**配布�
 
 | 文書 | 読む人 |
 |---|---|
-| [docs/登録のしかた.md](docs/登録のしかた.md) | 作品を登録する作者さん・代理で登録する方 |
+| [docs/登録のしかた.md](docs/登録のしかた.md) | 作品を登録する作者様・代理で登録する方 |
 | [docs/通報の決まり.md](docs/通報の決まり.md) | 通報する方・管理人 |
 | [docs/管理のしかた.md](docs/管理のしかた.md) | 管理人・副管理人 |
 | [docs/データの形.md](docs/データの形.md) | カタログのデータを使う方・開発する方 |
@@ -63,4 +63,4 @@ CardWirth（1.50・Next・Py）のシナリオ・素材・スキンの**配布�
 
 - カタログのデータ（`entries/`・`catalog.json`・`public/`）は **CC0 1.0**（https://creativecommons.org/publicdomain/zero/1.0/deed.ja ）です。自由に使えます。写して使うときに、出典として「CardWirth 共用カタログ」を書いていただけると嬉しいです（任意）
 - プログラム（`scripts/`・`site/`・`.github/`、これから作る受付）は **MIT** です
-- 「Card Wirth」の著作権は group Ask に帰属します。各作品の権利は、それぞれの作者さんにあります
+- 「Card Wirth」の著作権は group Ask に帰属します。各作品の権利は、それぞれの作者様にあります

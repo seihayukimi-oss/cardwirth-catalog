@@ -21,7 +21,7 @@ const hostOf = (u) => { try { return new URL(u).hostname.toLowerCase(); } catch 
 const norm = (s) => String(s || '').normalize('NFKC').toLowerCase().replace(/\s+/g, '');
 /**
  * サイト認証をしたサイトの、見分け用の短い形：ホスト名（www. は外す）＋最初の部分。
- * 例：https://seesaawiki.jp/abc/d/page → seesaawiki.jp/abc。同じ名前の別の作者さんを見分けるのに使う
+ * 例：https://seesaawiki.jp/abc/d/page → seesaawiki.jp/abc。同じ名前の別の作者様を見分けるのに使う
  */
 export function siteLabel(u) {
   if (!isHttp(u)) return '';
@@ -76,7 +76,7 @@ export function toPublic(e, block = { urls: [], hosts: [], authors: [] }, verifi
   if (content.length) out.content = content;
   if (state === 'held') { out.state = 'held'; if (str(e.held_reason, 300)) out.held_reason = str(e.held_reason, 300); }
   if (e.claim === 'author' || e.claim === 'proxy') out.claim = e.claim;
-  // 作者さん本人の登録：どのサイトで認証したか（作者本人の編集キーで登録したときは、キーを持っていた作品のサイト）
+  // 作者様本人の登録：どのサイトで認証したか（作者本人の編集キーで登録したときは、キーを持っていた作品のサイト）
   if (e.claim === 'author') { const s = siteLabel(e.verified?.where) || verifiedSite; if (s) out.verified_site = s; }
   for (const [k, max] of [['description', 5000], ['readme', 300], ['checked_note', 300]]) if (str(e[k], max)) out[k] = str(e[k], max);
   if (['readme', 'site', 'author', 'other'].includes(e.checked)) out.checked = e.checked;

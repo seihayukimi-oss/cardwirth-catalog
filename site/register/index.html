@@ -23,17 +23,17 @@
 <main>
   <p><a href="../">← 共用カタログ トップへ</a></p>
   <h1>作品を登録する</h1>
-  <p class="lead">配布場所の情報だけを登録します（作品のファイルはアップロードしません）。作者さんご本人のほか、<b>代理での登録が許可されている作品</b>なら、作者さん以外の方も登録できます。</p>
-  <p class="bulk-link"><a class="btn ghost" href="bulk/">複数シナリオを登録はこちら</a> <span class="hint">同じ作者さんの作品を、何作品かまとめて登録できます</span></p>
+  <p class="lead">配布場所の情報だけを登録します（作品のファイルはアップロードしません）。作者様ご本人のほか、<b>代理での登録が許可されている作品</b>なら、作者様以外の方も登録できます。</p>
+  <p class="bulk-link"><a class="btn ghost" href="bulk/">複数シナリオを登録はこちら</a> <span class="hint">同じ作者様の作品を、何作品かまとめて登録できます</span></p>
 
   <form id="reg" class="card" novalidate>
     <fieldset id="claim-box">
       <legend>登録する人</legend>
       <div class="choices">
-        <label><input type="radio" name="claim" value="proxy" checked> 作者さん以外（代理登録）</label>
+        <label><input type="radio" name="claim" value="proxy" checked> 作者様以外（代理登録）</label>
         <label><input type="radio" name="claim" value="author"> 作者本人</label>
       </div>
-      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> 代理での登録が許可されている作品です（Readme・作者さんのサイトなどで確かめました）</label>
+      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> 代理での登録が許可されている作品です（Readme・作者様のサイトなどで確かめました）</label>
       <label class="field if-author" hidden>作者本人の編集キー（お持ちの方）<span class="hint">サイト認証が済んだ作品の編集キーを入れると、サイト認証なしで作者本人の登録になり、同じキーで直せます。（作者名は、認証済みの作品と同じにしてください）</span><input name="author_key" placeholder="XXXX-XXXX-…" autocomplete="off"></label>
       <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../manage/#verify">サイト認証</a>で本人の登録にできます。（作者本人の編集キーを入れたときは、すぐに本人の登録になります）</p>
     </fieldset>

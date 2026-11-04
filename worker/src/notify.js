@@ -55,7 +55,7 @@ export function entryMessage(env, kind, e, extra = '') {
     takedown: '🚫 掲載停止の申請がありました',
     unregister: '🗑 登録が解除されました',
     change: '✏️ 登録内容が変更されました',
-    verify: '✅ サイト認証で、作者さん本人の登録になりました',
+    verify: '✅ サイト認証で、作者様本人の登録になりました',
     report_hold: '⚠️ 通報が集まったので、一時保留にしました',
     report_link: '🔗 リンク切れ・配布先の不備の通報がありました',
     report: '📣 通報がありました',

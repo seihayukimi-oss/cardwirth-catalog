@@ -1,4 +1,4 @@
-// 受付（Cloudflare Worker）の試験。GitHub・Turnstile・作者さんのサイトは、まねをするものに置き換える。
+// 受付（Cloudflare Worker）の試験。GitHub・Turnstile・作者様のサイトは、まねをするものに置き換える。
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, createHash } from 'node:crypto';
@@ -125,7 +125,7 @@ test('直す・登録解除・掲載をやめてほしい・見る', async () =>
   assert.ok(commits.some((m) => m.startsWith('登録解除：')));
 });
 
-test('サイト認証：確認用の文字がページにあれば作者さん本人の登録にして、新しい編集キー', async () => {
+test('サイト認証：確認用の文字がページにあれば作者様本人の登録にして、新しい編集キー', async () => {
   const { body: { id, edit_key } } = await call('/api/register', form);
   const st = await call('/api/verify/start', { id });
   assert.match(st.body.token, /^cw-catalog-verify:[a-z2-9]{16}$/);
@@ -141,7 +141,7 @@ test('サイト認証：確認用の文字がページにあれば作者さん�
   assert.equal((await call('/api/edit', { ...form, id, key: ck.body.edit_key })).status, 200);
 });
 
-test('まとめて認証：作者さんのサイトに確認用コードを1つ載せれば、並べた作品をまとめて作者本人に（同じ編集キー）', async () => {
+test('まとめて認証：作者様のサイトに確認用コードを1つ載せれば、並べた作品をまとめて作者本人に（同じ編集キー）', async () => {
   const site = 'https://author.example/';
   pages.set(site, '<html><body>テスト作者のサイト</body></html>');
   const a = (await call('/api/register', { ...form, site, claim: 'author' })).body;

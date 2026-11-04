@@ -196,7 +196,7 @@
       e.rating && e.rating !== 'all' ? h('span', { class: `badge rt-${e.rating}` }, RATING[e.rating]) : null,
       ...(e.content || []).map((c) => h('span', { class: 'badge lb' }, labelName(c))),
       h('span', { class: 'badge plain' }, e.claim === 'author' ? (vsite ? `作者本人（認証サイト名：${vsite}）` : '作者本人') : e.claim_wish === 'author' ? '作者本人（未認証）' : '代理登録'),
-      e.claim === 'author' && e.same_name?.others?.length ? h('span', { class: 'badge st-pending', title: '同じ作者名で、別のサイトで認証した作者本人の作品があります。同じ名前の別の作者さんか、なりすましでないか確かめてください' }, '⚠ 同じ作者名・別のサイト') : null,
+      e.claim === 'author' && e.same_name?.others?.length ? h('span', { class: 'badge st-pending', title: '同じ作者名で、別のサイトで認証した作者本人の作品があります。同じ名前の別の作者様か、なりすましでないか確かめてください' }, '⚠ 同じ作者名・別のサイト') : null,
       reportCount(e.id) ? h('span', { class: 'badge st-pending' }, `通報 ${reportCount(e.id)}`) : null,
     ));
     card.append(h('h3', { class: 'entry-title' }, e.name || '（作品名なし）', h('span', { class: 'by' }, ` ／ ${e.author || '（作者名なし）'}`)));
@@ -207,7 +207,7 @@
     row('種類・形式', `${TYPE[e.type] || e.type || ''}${e.version ? `・版 ${e.version}` : ''}${e.format ? `・${{ classic: 'クラシック（1.50）', next: 'Next仕様', wsn: 'Py仕様（WSN）' }[e.format] || e.format}` : ''}`);
     row('配布先', h('ul', { class: 'plain' }, ...(e.downloads || []).map((d) => h('li', {}, link(d.url, d.label ? `${d.label}：${d.url}` : d.url), h('span', { class: 'muted' }, `（${DL_KIND[d.kind] || d.kind}・${DL_STATUS[d.status] || d.status}${d.match ? `・「${d.match}」で探す` : ''}）`)))));
     if ((e.intro || []).length) row('紹介ページ', h('ul', { class: 'plain' }, ...e.intro.map((i) => h('li', {}, link(i.url, i.label ? `${i.label}：${i.url}` : i.url)))));
-    if (e.site) row('作者さんのサイト', link(e.site));
+    if (e.site) row('作者様のサイト', link(e.site));
     row('情報元', `${CHECKED[e.checked] || e.checked || '（なし）'}${e.checked_note ? `：${e.checked_note}` : ''}`);
     if (e.derivative) row('改変版', `もと：${e.derivative.of || ''}／根拠：${e.derivative.basis || ''}`);
     if (e.auto_check) row('自動の確認', e.auto_check.ok ? h('span', {}, '作品名と作者名が見つかった：', link(e.auto_check.where)) : '配布ページなどに、作品名と作者名が見つからなかった', h('span', { class: 'muted' }, `（${when(e.auto_check.at)}）`));
@@ -215,7 +215,7 @@
     if (state === 'held' && e.held_reason) row('一時保留の理由', e.held_reason, e.report_hold ? h('span', { class: 'muted' }, `（通報で自動：${REASON[e.report_hold.reason] || e.report_hold.reason} ${e.report_hold.count}人・${when(e.report_hold.at)}）`) : '');
     if (reportCount(e.id)) row('通報', Object.entries(S.reports[e.id]).map(([k, n]) => `${REASON[k] || k} ${n}人`).join('・'));
     if (e.verified) row('サイト認証', e.verified.via === 'author_key' ? `作者本人の編集キーで登録（${e.verified.from || ''} と同じキー）` : link(e.verified.where), vsite ? h('span', {}, `・認証サイト名：${vsite}`) : null, h('span', { class: 'muted' }, `（${when(e.verified.at)}）`));
-    if (e.claim === 'author' && e.same_name?.others?.length) row('⚠ 同じ作者名', h('span', { class: 'msg-line danger' }, `別のサイトで認証した作者本人の作品があります：${e.same_name.others.map((x) => `${x.id}（${x.site}）`).join('、')}`), h('span', { class: 'muted' }, '同じ名前の別の作者さんか、なりすましでないか確かめてください'));
+    if (e.claim === 'author' && e.same_name?.others?.length) row('⚠ 同じ作者名', h('span', { class: 'msg-line danger' }, `別のサイトで認証した作者本人の作品があります：${e.same_name.others.map((x) => `${x.id}（${x.site}）`).join('、')}`), h('span', { class: 'muted' }, '同じ名前の別の作者様か、なりすましでないか確かめてください'));
     if (e.verify) row('サイト認証', `手続き中（${when(e.verify.until)} まで）`);
     if ((e.tags || []).length) row('タグ', e.tags.join('、'));
     if (e.description) row('紹介文', h('span', { class: 'pre' }, e.description));
@@ -248,7 +248,7 @@
     }, label);
     const acts = h('div', { class: 'actions' });
     if (state === 'pending') acts.append(setState('public', '承認して公開'));
-    else if (state !== 'public') acts.append(setState('public', '公開に戻す', state === 'removed' ? '登録解除された作品を、もう一度公開します。作者さんの意向を確かめましたか？' : state === 'private' && e.takedown ? '掲載停止の申請があった作品です。公開に戻してよいですか？' : ''));
+    else if (state !== 'public') acts.append(setState('public', '公開に戻す', state === 'removed' ? '登録解除された作品を、もう一度公開します。作者様の意向を確かめましたか？' : state === 'private' && e.takedown ? '掲載停止の申請があった作品です。公開に戻してよいですか？' : ''));
     if (state !== 'held') acts.append(setState('held', '一時保留'));
     if (state !== 'private') acts.append(setState('private', '非公開'));
     if (state !== 'removed') acts.append(setState('removed', '登録解除', `「${e.name}」の登録を解除します。よろしいですか？`));

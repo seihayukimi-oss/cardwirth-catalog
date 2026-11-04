@@ -35,7 +35,7 @@ export function decodeHtml(bytes, contentType = '') {
 }
 
 /**
- * ページを読んで文字にする（作者さんのサイトに負担をかけないよう、小さく・早く切り上げる）
+ * ページを読んで文字にする（作者様のサイトに負担をかけないよう、小さく・早く切り上げる）
  * @returns {Promise<string|null>}
  */
 export async function fetchPageText(url, fetchImpl = fetch, { max = 1024 * 1024, timeout = 8000 } = {}) {
@@ -55,7 +55,7 @@ export async function fetchPageText(url, fetchImpl = fetch, { max = 1024 * 1024,
 }
 
 /**
- * 自動で公開してよいか：配布ページ・紹介ページ・作者さんのサイトのどれかに、作品名と作者名の両方が書いてあるか
+ * 自動で公開してよいか：配布ページ・紹介ページ・作者様のサイトのどれかに、作品名と作者名の両方が書いてあるか
  * @returns {Promise<{ok: boolean, where: string}>}
  */
 export async function autoApprove(entry, fetchImpl = fetch) {

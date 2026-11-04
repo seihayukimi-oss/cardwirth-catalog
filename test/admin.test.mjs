@@ -1,5 +1,5 @@
 // 管理用の窓口（/api/admin/…）と Discord の知らせの試験。
-// GitHub・Turnstile・KV・Discord・作者さんのサイトは、まねをするものに置き換える。
+// GitHub・Turnstile・KV・Discord・作者様のサイトは、まねをするものに置き換える。
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, createHash } from 'node:crypto';

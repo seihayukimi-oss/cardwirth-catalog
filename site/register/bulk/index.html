@@ -23,25 +23,25 @@
 <main>
   <p><a href="../">← 作品を登録する（1作品ずつ）</a></p>
   <h1>複数シナリオの一括登録</h1>
-  <p class="lead">同じ作者さんの作品を、何作品かまとめて登録します。作者名・作者さんのサイトなど、全部に共通のことは1回だけ書けば大丈夫です。送るときは、作品を1つずつ順番に受付へ送ります。</p>
+  <p class="lead">同じ作者様の作品を、何作品かまとめて登録します。作者名・作者様のサイトなど、全部に共通のことは1回だけ書けば大丈夫です。送るときは、作品を1つずつ順番に受付へ送ります。</p>
   <p class="hint">改変版の作品は、<a href="../">1作品ずつの登録</a>からお願いします（もとの作品と、改変してよいと分かるものを書く欄があります）。</p>
 
   <form id="bulk" class="card" novalidate>
     <fieldset>
       <legend>登録する人</legend>
       <div class="choices">
-        <label><input type="radio" name="claim" value="proxy" checked> 作者さん以外（代理登録）</label>
+        <label><input type="radio" name="claim" value="proxy" checked> 作者様以外（代理登録）</label>
         <label><input type="radio" name="claim" value="author"> 作者本人</label>
       </div>
-      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> どの作品も、代理での登録が許可されています（Readme・作者さんのサイトなどで確かめました）</label>
+      <label class="check if-proxy"><input type="checkbox" name="proxy_ok"> <b class="req">必須</b> どの作品も、代理での登録が許可されています（Readme・作者様のサイトなどで確かめました）</label>
       <label class="field if-author" hidden>作者本人の編集キー（お持ちの方）<span class="hint">サイト認証が済んだ作品の編集キーを入れると、サイト認証なしで作者本人の登録になり、どの作品も同じキーで直せます。（作者名は、認証済みの作品と同じにしてください）</span><input name="author_key" placeholder="XXXX-XXXX-…" autocomplete="off"></label>
       <p class="hint">作者本人の方も、はじめは「代理登録」として載ります。登録したあと、<a href="../../manage/#verify">サイト認証</a>で本人の登録にできます（まとめて認証もできます）。作者本人の編集キーを入れたときは、すぐに本人の登録になります。</p>
     </fieldset>
     <fieldset>
       <legend>全部の作品に共通</legend>
       <label class="field"><b class="req">必須</b> 作者名<span class="hint">作者名またはサークル名（※代理登録の場合、登録者ではなく原作者名を入力してください）</span><input name="author" required maxlength="200"></label>
-      <label class="field">作者さんのサイト<input name="site" type="url" placeholder="https://"></label>
-      <label class="field">予備の配布URL<span class="hint">作者さんの配布ページなど、全部の作品の予備として入れます。1行に1つ。「名前 | URL」とも書けます</span><textarea name="more_urls" rows="2"></textarea></label>
+      <label class="field">作者様のサイト<input name="site" type="url" placeholder="https://"></label>
+      <label class="field">予備の配布URL<span class="hint">作者様の配布ページなど、全部の作品の予備として入れます。1行に1つ。「名前 | URL」とも書けます</span><textarea name="more_urls" rows="2"></textarea></label>
       <label class="field"><b class="req">必須</b> 情報元・確認方法<span class="hint if-not-author">配布先・作者名・代理許可等をどこで確認したか選択してください（後から変更可能です）</span><span class="hint if-author" hidden>作者本人が登録するときは、ほかの人も確かめられる場所（Readme・作者公式サイト・配布ページなど）を選んでください。（後から変更可能です）</span>
         <select name="checked" required><option value="">選んでください</option><option value="readme">Readme</option><option value="site">作者公式サイト・配布ページ</option><option value="author">作者本人へ直接確認</option><option value="other">その他</option></select></label>
       <label class="field">補足<input name="checked_note" maxlength="300" placeholder="例：Readmeの「再配布について」の項目"></label>
@@ -234,7 +234,7 @@
     };
     const fail = (t) => { CW.msg(msg, t, 'bad'); };
     if (!common.author) return fail('作者名を入れてください');
-    if (common.site && !isHttp(common.site)) return fail('作者さんのサイトは https:// から始まるものにしてください');
+    if (common.site && !isHttp(common.site)) return fail('作者様のサイトは https:// から始まるものにしてください');
     if (!common.checked) return fail('「情報元・確認方法」を選んでください');
     if (common.claim !== 'author' && !common.proxy_ok) return fail('代理で登録するときは、「どの作品も、代理での登録が許可されています」にチェックを入れてください');
     const rows = [...rowsEl.querySelectorAll('.bulk-row')];
