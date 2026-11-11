@@ -1,0 +1,31 @@
+{
+  "id": "e00010",
+  "type": "scenario",
+  "name": "ピクロス",
+  "author": "名無し",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/f0995/download/26",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://uu.getuploader.com/f0995/",
+  "tags": [
+    "パズル"
+  ],
+  "rating": "all",
+  "checked": "author",
+  "state": "public",
+  "claim": "proxy",
+  "registered": "2026-11-11T03:41:46.482Z",
+  "changed": "2026-11-11T03:41:46.482Z",
+  "edit_key_hash": "4ed886881455b98f373d0017cc7d74aa6b28d8911dfead8437120d445e6642cf",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/f0995/download/26",
+    "at": "2026-11-11T03:41:46.482Z"
+  }
+}
