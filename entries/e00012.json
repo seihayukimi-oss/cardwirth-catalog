@@ -1,0 +1,33 @@
+{
+  "id": "e00012",
+  "type": "scenario",
+  "name": "遺産回収の手伝い",
+  "author": "名無し",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/f0995/download/16",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://uu.getuploader.com/f0995/",
+  "tags": [
+    "短編",
+    "冒険",
+    "Lv低"
+  ],
+  "rating": "all",
+  "checked": "author",
+  "state": "public",
+  "claim": "proxy",
+  "registered": "2026-11-11T03:41:56.151Z",
+  "changed": "2026-11-11T03:41:56.151Z",
+  "edit_key_hash": "a1992320a3350af6497a483fbfb06185b5783bfd1a272255b37f634c80ec98cb",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/f0995/download/16",
+    "at": "2026-11-11T03:41:56.151Z"
+  }
+}
