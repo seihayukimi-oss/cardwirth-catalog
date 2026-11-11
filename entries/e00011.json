@@ -1,0 +1,33 @@
+{
+  "id": "e00011",
+  "type": "scenario",
+  "name": "チンピラ戦隊",
+  "author": "名無し",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/f0995/download/18",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://uu.getuploader.com/f0995/",
+  "tags": [
+    "短編",
+    "戦闘あり",
+    "一人用"
+  ],
+  "rating": "all",
+  "checked": "author",
+  "state": "public",
+  "claim": "proxy",
+  "registered": "2026-11-11T03:41:51.391Z",
+  "changed": "2026-11-11T03:41:51.391Z",
+  "edit_key_hash": "93a6e37c49a71f5e55058e62ea3209c5af3680a510a38767f05f7e321bf9d495",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/f0995/download/18",
+    "at": "2026-11-11T03:41:51.391Z"
+  }
+}
