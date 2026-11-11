@@ -1,0 +1,33 @@
+{
+  "id": "e00013",
+  "type": "scenario",
+  "name": "猪を狩る者",
+  "author": "名無し",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/f0995/download/15",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://uu.getuploader.com/f0995/",
+  "tags": [
+    "短編",
+    "冒険",
+    "Lv低"
+  ],
+  "rating": "all",
+  "checked": "author",
+  "state": "public",
+  "claim": "proxy",
+  "registered": "2026-11-11T03:42:02.844Z",
+  "changed": "2026-11-11T03:42:02.844Z",
+  "edit_key_hash": "b9966741007dc3a6d653590f114f9cefc898b0ac19cc5475c958a92131ac1c8c",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/f0995/download/15",
+    "at": "2026-11-11T03:42:02.844Z"
+  }
+}
