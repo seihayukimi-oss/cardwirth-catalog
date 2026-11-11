@@ -1,0 +1,31 @@
+{
+  "id": "e00009",
+  "type": "scenario",
+  "name": "測定室",
+  "author": "名無し",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/f0995/download/29",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://uu.getuploader.com/f0995/",
+  "tags": [
+    "ユーティリティ"
+  ],
+  "rating": "all",
+  "checked": "author",
+  "state": "public",
+  "claim": "proxy",
+  "registered": "2026-11-11T03:41:41.271Z",
+  "changed": "2026-11-11T03:41:41.271Z",
+  "edit_key_hash": "1662de68ff258fdb85b298d2e534a015e821396841d0c819eb1c40aba49125b3",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/f0995/download/29",
+    "at": "2026-11-11T03:41:41.271Z"
+  }
+}
