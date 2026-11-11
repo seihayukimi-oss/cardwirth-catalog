@@ -1,0 +1,32 @@
+{
+  "id": "e00015",
+  "type": "scenario",
+  "name": "西方の開拓地",
+  "author": "名無し",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/f0995/download/13",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://uu.getuploader.com/f0995/",
+  "tags": [
+    "冒険",
+    "店"
+  ],
+  "rating": "all",
+  "checked": "author",
+  "state": "public",
+  "claim": "proxy",
+  "registered": "2026-11-11T03:42:15.586Z",
+  "changed": "2026-11-11T03:42:15.586Z",
+  "edit_key_hash": "b0fd7fbdb89f43ce6561e6dffa46a02693c45104a72e5c70dc92d2818af0dffb",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/f0995/download/13",
+    "at": "2026-11-11T03:42:15.586Z"
+  }
+}
