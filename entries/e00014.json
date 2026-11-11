@@ -1,0 +1,33 @@
+{
+  "id": "e00014",
+  "type": "scenario",
+  "name": "ゴブリンの洞窟０１",
+  "author": "名無し",
+  "format": "classic",
+  "downloads": [
+    {
+      "label": "",
+      "url": "https://uu.getuploader.com/f0995/download/14",
+      "kind": "page",
+      "status": "active"
+    }
+  ],
+  "site": "https://uu.getuploader.com/f0995/",
+  "tags": [
+    "短編",
+    "冒険",
+    "Lv低"
+  ],
+  "rating": "all",
+  "checked": "author",
+  "state": "public",
+  "claim": "proxy",
+  "registered": "2026-11-11T03:42:09.127Z",
+  "changed": "2026-11-11T03:42:09.127Z",
+  "edit_key_hash": "9a81a3cb6eff1ff241076dfa000c8f41e5d13306486a0958110b3525e258aca8",
+  "auto_check": {
+    "ok": true,
+    "where": "https://uu.getuploader.com/f0995/download/14",
+    "at": "2026-11-11T03:42:09.127Z"
+  }
+}
